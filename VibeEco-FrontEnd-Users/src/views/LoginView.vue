@@ -59,7 +59,7 @@
 
         <p class="cadastro">
           Primeiro acesso?
-          <a href="#" @click.prevent>Crie sua senha aqui</a>
+          <RouterLink to="/primeiro-acesso">Crie sua senha aqui</RouterLink>
         </p>
       </div>
     </div>
