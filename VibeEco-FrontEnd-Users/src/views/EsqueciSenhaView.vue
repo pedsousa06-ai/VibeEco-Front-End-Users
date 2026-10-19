@@ -98,8 +98,8 @@ function moverBolha(event) {
 .subtitulo {
   margin: 8px 0 24px;
   color: #829084;
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 15px;
+  line-height: 1.3;
 }
 
 .caixa-esqueci-senha form {
@@ -110,7 +110,7 @@ function moverBolha(event) {
 .caixa-esqueci-senha label {
   margin-bottom: 7px;
   color: #344638;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
 }
 
