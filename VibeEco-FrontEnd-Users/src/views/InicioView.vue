@@ -20,9 +20,9 @@ const resumo = [
 ]
 
 const missoes = [
-  { id: 1, categoria: 'Reciclagem', dificuldade: 'Médio', titulo: 'Descarte Consciente', xp: 150, prazo: '3 dias', progresso: 65 },
-  { id: 2, categoria: 'Água', dificuldade: 'Fácil', titulo: 'Economia de Água', xp: 100, prazo: '4 dias', progresso: 30 },
-  { id: 3, categoria: 'Alimentação', dificuldade: 'Difícil', titulo: 'Horta Comunitária', xp: 200, prazo: '2 dias', progresso: 80 }
+  { id: 1, categoria: 'Reciclagem', dificuldade: ' Médio', titulo: 'Descarte Consciente', xp: 150, prazo: '3 dias', progresso: 65 },
+  { id: 2, categoria: 'Água', dificuldade: ' Fácil', titulo: 'Economia de Água', xp: 100, prazo: '4 dias', progresso: 30 },
+  { id: 3, categoria: 'Alimentação', dificuldade: ' Difícil', titulo: 'Horta Comunitária', xp: 200, prazo: '2 dias', progresso: 80 }
 ]
  
 const conteudos = [
@@ -93,11 +93,36 @@ const conquistas = [
 
         <div class="grade">
           <!-- COLUNA ESQUERDA -->
-           <div class="coluna">
-              <div class="cabeçalho-secao">
-                  <h3>Missões em Andamento</h3>
-                  <RouterLink to="/missoes"> Ver Todas ›</RouterLink>
+          <div class="coluna">
+            <div class="cabeçalho-secao">
+              <h3>Missões em Andamento</h3>
+              <RouterLink to="/missoes"> Ver Todas ›</RouterLink>
+            </div>
+
+            <article v-for="missao in missoes" :key="missao.id" class="card missao">
+              <div class="missao-topo">
+                <div>
+                  <span class="tag">{{ missao.categoria }}</span>
+                  <span class="dificuldade">{{ missao.dificuldade }}</span>
+                </div>
+                <span class="xp">⭐ {{ missao.xp }} XP</span>
               </div>
+
+              <div class="missao-meio">
+                <strong>{{ missao.titulo }}</strong>
+                <small>Prazo: {{ missao.prazo }}</small>
+              </div>
+
+              <div class="missao-progresso">
+                <small>Progresso</small>
+                <small>{{ missao.progresso }}%</small>
+              </div>
+
+              <div class="barra">
+                <div class="barra-preenchimento" :style="{width: missao.progresso + '%'}"></div>
+              </div>
+            </article>
+
            </div>
         </div>
 
