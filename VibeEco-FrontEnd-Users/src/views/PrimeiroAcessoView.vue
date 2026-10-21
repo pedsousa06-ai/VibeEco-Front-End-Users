@@ -1,5 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const senhaAtual = ref('')
 const novaSenha = ref('')
@@ -33,8 +36,9 @@ function criarSenha(){
     return
   }
 
-  // aqui depois você chama a API para trocar a senha
-  console.log('Senha alterada com sucesso')
+  // TODO: aqui depois você chama a API para trocar a senha
+  // Senha criada: volta ao login, que mostra o aviso de sucesso
+  router.push({ name: 'tela-acesso', query: { aviso: 'senha-criada' } })
 }
 
 function moverBolha(event) {
@@ -59,7 +63,7 @@ function moverBolha(event) {
       </p>
 
       <form @submit.prevent="criarSenha">
-        <! -- SENHA ATUAL -- >
+        <!-- SENHA ATUAL -->
         <label for="senha-atual">Senha atual</label>
         <div class="campo-senha">
           <input
@@ -116,7 +120,7 @@ function moverBolha(event) {
           </button>
         </div>
 
-        <! -- CONFIRMAR NOVA SENHA -- >
+        <!-- CONFIRMAR NOVA SENHA -->
         <label for="confirmar-senha">Confirme nova senha</label>
         <div class="campo-senha">
           <input 
@@ -166,7 +170,7 @@ function moverBolha(event) {
     padding: 24px 0;
     box-sizing: border-box;
 
-    background: url('fundo.png') center / cover no-repeat;
+    background: url('/fundo.png') center / cover no-repeat;
   }
 
   .logo{

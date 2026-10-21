@@ -1,11 +1,15 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { iniciarRecuperacao } from '@/services/recuperacaoSenha'
 
+const router = useRouter()
 const email = ref('')
 
-function enviarLink() {
-  // aqui depois você chama a API de recuperação de senha
-  console.log('Enviar link para:', email.value)
+function enviarCodigo() {
+  // TODO: chamar a API de recuperação de senha (ela envia o código de 6 dígitos para o e-mail)
+  iniciarRecuperacao(email.value) // guarda o e-mail e libera a etapa seguinte
+  router.push('/verificar-codigo')
 }
 
 function moverBolha(event) {
@@ -26,10 +30,10 @@ function moverBolha(event) {
 
       <h2>Esqueceu sua senha?</h2>
       <p class="subtitulo">
-        Informe o e-mail cadastrado e enviaremos um link para redefinir sua senha.
+        Informe o e-mail cadastrado e enviaremos um código para redefinir sua senha.
       </p>
 
-      <form @submit.prevent="enviarLink">
+      <form @submit.prevent="enviarCodigo">
         <label for="email">E-mail institucional</label>
         <input
           type="email"
@@ -40,7 +44,7 @@ function moverBolha(event) {
         />
 
         <button type="submit" @mousemove="moverBolha">
-          Enviar link de recuperação
+          Enviar código de recuperação
         </button>
       </form>
     </div>
