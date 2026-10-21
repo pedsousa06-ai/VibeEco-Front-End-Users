@@ -13,10 +13,10 @@ const usuario = {
 const porcentagemNivel = Math.round((usuario.xp / usuario.xpProximoNivel) * 100)
 
 const resumo = [
-  { valor: '5', rotulo: 'Missões em Andamento', icone: '🎯', cor: 'verde' },
-  { valor: '23', rotulo: 'Missões Concluídas', icone: '💡', cor: 'amarelo' },
-  { valor: '2', rotulo: 'Desafios Ativos', icone: '⚡', cor: 'roxo' },
-  { valor: '#14', rotulo: 'Posição no Ranking', detalhe: 'Top 5% na instituição', icone: '🏆', cor: 'laranja' }
+  { valor: '5', rotulo: ' Missões em Andamento', icone: '🎯', cor: 'verde' },
+  { valor: '23', rotulo: ' Missões Concluídas', icone: '💡', cor: 'amarelo' },
+  { valor: '2', rotulo: ' Desafios Ativos', icone: '⚡', cor: 'roxo' },
+  { valor: '#14', rotulo: ' Posição no Ranking', detalhe: 'Top 5% na instituição', icone: '🏆', cor: 'laranja' }
 ]
 
 const missoes = [
@@ -49,7 +49,7 @@ const conquistas = [
 
 <template>
     <div class="inicio">
-        <! -- BANNER DE BOA-VINDAS -- >
+        <!-- BANNER DE BOA-VINDAS -->
         <section class="banner">
             <div class="banner-texto">
               <small>Bom dia,</small>
@@ -78,12 +78,28 @@ const conquistas = [
             </div>
         </section>
 
-        <! -- CARDS DE RESUMO-- >
+        <!-- CARDS DE RESUMO -->
         <section>
           <article v-for="item in resumo" :key="item.rotulo" class="card resumo-card">
             <div class="resumo-icone" :class="item-cor">{{ item.icone }}</div>
+
+            <div>
+              <strong>{{ item.valor }}</strong>
+              <span>{{ item.rotulo }}</span>
+              <small v-if="item.detalhe">{{ item.detalhe }}</small>
+            </div>
           </article>
         </section>
+
+        <div class="grade">
+          <!-- COLUNA ESQUERDA -->
+           <div class="coluna">
+              <div class="cabeçalho-secao">
+                  <h3>Missões em Andamento</h3>
+                  <RouterLink to="/missoes"> Ver Todas ›</RouterLink>
+              </div>
+           </div>
+        </div>
 
     </div>
 </template>
