@@ -6,8 +6,8 @@ const usuario = {
     nivel: 'Nível 7 - Guardião',
     xp: 2450,
     xpProximoNivel: 3000,
-    mc: 380,
-    ofensiva: 7
+    mc: 480,
+    ofensiva: 8
 }
 
 const porcentagemNivel = Math.round((usuario.xp / usuario.xpProximoNivel) * 100)
@@ -52,9 +52,39 @@ const conquistas = [
         <! -- BANNER DE BOA-VINDAS -- >
         <section class="banner">
             <div class="banner-texto">
+              <small>Bom dia,</small>
+              <h2>{{ usuario.nome }}!</h2>
+              <p>
+                Você está em uma ofensiva de <strong>{{ usuario.ofensiva }} dias</strong>. Continue assim!
+              </p>
 
+              <div class="banner-chips">
+                <span>⭐ {{ usuario.xp.toLocaleString('pt-BR') }} XP</span>
+                <span>🪙 {{ usuario.mc }} MC</span>
+                <span>🔥 {{ usuario.ofensiva }} dias</span>
+              </div>
+            </div>
+
+            <div class="banner-nivel">
+              <div class="banner-avatar">{{ usuario.iniciais }}</div>
+              <small>{{ usuario.nivel }}</small>
+
+              <div class="barra barra-clara">
+                <div class="barra-preenchimento" :style="{ width: porcentagemNivel + '%' }"></div>
+              </div>
+              <small class="banner-xp">
+                {{ usuario.xp.toLocaleString('pt-BR') }} / {{ usuario.xpProximoNivel.toLocaleString('pt-BR') }} XP
+              </small>
             </div>
         </section>
+
+        <! -- CARDS DE RESUMO-- >
+        <section>
+          <article v-for="item in resumo" :key="item.rotulo" class="card resumo-card">
+            <div class="resumo-icone" :class="item-cor">{{ item.icone }}</div>
+          </article>
+        </section>
+
     </div>
 </template>
 
