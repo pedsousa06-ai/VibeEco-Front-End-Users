@@ -26,9 +26,9 @@ const missoes = [
 ]
  
 const conteudos = [
-  { id: 1, categoria: 'Reciclagem', titulo: 'Guia de Reciclagem Doméstica', leitura: '8 min leitura', xp: 50, concluido: true },
-  { id: 2, categoria: 'Energia', titulo: 'Energia Solar: Como Funciona', leitura: '12 min leitura', xp: 75, concluido: false },
-  { id: 3, categoria: 'Alimentação', titulo: 'Alimentação Sustentável', leitura: '6 min leitura', xp: 50, concluido: false }
+  { id: 1, categoria: 'Reciclagem', titulo: ' Guia de Reciclagem Doméstica', leitura: '8 min leitura', xp: 50, concluido: true },
+  { id: 2, categoria: 'Energia', titulo: ' Energia Solar: Como Funciona', leitura: '12 min leitura', xp: 75, concluido: false },
+  { id: 3, categoria: 'Alimentação', titulo: ' Alimentação Sustentável', leitura: '6 min leitura', xp: 50, concluido: false }
 ]
  
 const diasSemana = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']
@@ -123,7 +123,28 @@ const conquistas = [
               </div>
             </article>
 
+            <div class="cabecalho-secao">
+              <h3>Conteúdos Recomendados</h3>
+              <RouterLink to="/conteudos">Ver todas ›</RouterLink>
+            </div>
+
+            <div class="conteudos">
+              <article v-for="conteudo in conteudos" :key="conteudo.id" class="card conteudo">
+                <div class="conteudo-topo">
+                  <span class="tag">{{ conteudo.categoria }}</span>
+                  <span v-if="conteudo.concluido" class="concluido"> Concluído</span>
+                </div>
+                
+                <strong>{{ conteudo.titulo }}</strong>
+                <div class="conteudo-rodape">
+                  <small>{{ conteudo.leitura }}</small>
+                  <span class="xp">⭐ {{ conteudo.xp }} XP</span>
+                </div>
+              </article>
+            </div>
            </div>
+
+           <!-- COLUNA DA DIREITA-->
         </div>
 
     </div>
