@@ -4,10 +4,10 @@ const usuario = {
     nome: 'Maria Alves',
     iniciais: 'MA',
     nivel: 'Nível 7 - Guardião',
-    xp: 2450,
+    xp: 3450,
     xpProximoNivel: 3000,
     mc: 480,
-    ofensiva: 8
+    ofensiva: 9
 }
 
 const porcentagemNivel = Math.round((usuario.xp / usuario.xpProximoNivel) * 100)
@@ -145,6 +145,19 @@ const conquistas = [
            </div>
 
            <!-- COLUNA DA DIREITA-->
+           <div class="coluna">
+            <article class="card lateral">
+              <h3>🔥 Ofensiva Diária</h3>
+              <div class="ofensiva">
+                <strong>{{ usuario.ofensiva }}</strong>
+                <span> dias consecutivos</span>
+              </div>
+              <div class="dias">
+                <span v-for="(dia, i) in diasSemana" :key="i">{{ dia }}</span>
+              </div>
+            </article>
+           </div>
+
         </div>
 
     </div>
