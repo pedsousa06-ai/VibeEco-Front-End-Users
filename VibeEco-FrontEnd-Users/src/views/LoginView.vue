@@ -1,13 +1,62 @@
 <script setup>
-  import { ref, onMounted} from 'vue'
+  import { computed, onMounted, ref } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { entrar } from '@/services/auth'
 
-  const carregamento = ref(true)
+  const router = useRouter()
+  const route = useRoute()
+
+  // A tela de carregamento aparece só na primeira vez da sessão,
+  // não toda vez que o usuário volta ao login
+  const SPLASH_VISTO = 'vibeeco_splash_visto'
+  const carregamento = ref(!sessionStorage.getItem(SPLASH_VISTO))
 
   onMounted(() => {
+    if (!carregamento.value) return
     setTimeout(() => {
       carregamento.value = false
+      sessionStorage.setItem(SPLASH_VISTO, '1')
     }, 2000);
   })
+
+  const login = ref('')
+  const senha = ref('')
+  const lembrar = ref(false)
+  const erro = ref('')
+  const enviando = ref(false)
+
+  // Mensagens que chegam de outras telas do fluxo (?aviso=...)
+  const AVISOS = {
+    'senha-alterada': 'Senha alterada com sucesso! Entre com a nova senha.',
+    'senha-criada': 'Senha criada com sucesso! Agora é só entrar.'
+  }
+  const aviso = computed(() => AVISOS[route.query.aviso] || '')
+
+  // Só aceita caminhos internos como destino depois do login
+  function destinoSeguro() {
+    const alvo = route.query.redirect
+    return typeof alvo === 'string' && alvo.startsWith('/') && !alvo.startsWith('//')
+      ? alvo
+      : { name: 'inicio' }
+  }
+
+  async function entrarNaPlataforma() {
+    erro.value = ''
+    if (!login.value.trim() || !senha.value) {
+      erro.value = 'Informe seu e-mail ou matrícula e a senha.'
+      return
+    }
+    enviando.value = true
+    try {
+      // TODO: trocar pela chamada real de autenticação em services/auth.js
+      await entrar(login.value, senha.value, lembrar.value)
+      router.push(destinoSeguro())
+    } catch (e) {
+      erro.value = e.message || 'Não foi possível entrar. Tente novamente.'
+    } finally {
+      enviando.value = false
+    }
+  }
 
 </script>
 
@@ -36,24 +85,40 @@
           Entre com suas credenciais para acessar a plataforma.
         </p>
 
-        <form>
+        <form @submit.prevent="entrarNaPlataforma" novalidate>
+          <p v-if="aviso" class="mensagem mensagem-ok" role="status">{{ aviso }}</p>
+
           <label for="email">E-mail ou matrícula</label>
-          <input type="text" id="email" placeholder="seuemail@instituicao.edu.br"/>
+          <input
+            type="text"
+            id="email"
+            v-model="login"
+            autocomplete="username"
+            placeholder="seuemail@instituicao.edu.br"
+          />
 
           <label for="senha">Senha</label>
-          <input type="password" id="senha" placeholder="Digite sua senha"/>
+          <input
+            type="password"
+            id="senha"
+            v-model="senha"
+            autocomplete="current-password"
+            placeholder="Digite sua senha"
+          />
           
           <div class="opcoes-login">
             <label class="lembrar">
-              <input type="checkbox"/>
+              <input type="checkbox" v-model="lembrar"/>
               lembrar de mim
             </label>
 
             <RouterLink to="/esqueci-senha">Esqueci minha senha</RouterLink>
           </div>
 
-          <button type="button">
-            Entrar na plataforma
+          <p v-if="erro" class="mensagem mensagem-erro" role="alert">{{ erro }}</p>
+
+          <button type="submit" :disabled="enviando">
+            {{ enviando ? 'Entrando...' : 'Entrar na plataforma' }}
           </button>
         </form>
 
@@ -69,13 +134,14 @@
 <style scoped>
 
 /* CONFIGURAÇÕES DA TELA */
+/* O overflow hidden fica só nos contêineres desta tela (.loading e .home),
+   para não travar a rolagem das outras páginas do site */
 :global(html),
 :global(body) {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden;
 }
 
 /* TELA DE CARREGAMENTO */
@@ -83,6 +149,7 @@
 .loading {
   width: 100%;
   height: 100vh;
+  overflow: hidden;
 
   display: flex;
   justify-content: center;
@@ -98,6 +165,7 @@
 .home{
   width: 100%;
   height: 100vh;
+  overflow: hidden;
   display: flex;
 }
 
@@ -235,8 +303,13 @@
   cursor: pointer;
 }
 
-.caixa-login button:hover{
+.caixa-login button:hover:not(:disabled){
   background-color: #19ad55;
+}
+
+.caixa-login button:disabled{
+  opacity: 0.7;
+  cursor: wait;
 }
 
 .cadastro{
@@ -244,6 +317,25 @@
   text-align: center;
   font-size: 12px;
   margin-top: 25px;
+}
+
+/* MENSAGENS DE AVISO E ERRO */
+.mensagem{
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.mensagem-ok{
+  background-color: #e3f4e8;
+  color: #1b7a34;
+}
+
+.mensagem-erro{
+  margin: 0 0 14px;
+  background-color: #fdecec;
+  color: #c62828;
 }
 
 </style>
