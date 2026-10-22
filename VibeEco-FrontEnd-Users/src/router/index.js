@@ -9,6 +9,21 @@ import NovaSenha from '@/views/NovaSenhaView.vue'
 import PrimeiroAcesso from '@/views/PrimeiroAcessoView.vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import Inicio from '@/views/InicioView.vue'
+import EmBreve from '@/views/EmBreveView.vue'
+
+// Telas do menu que ainda não foram feitas: usam a tela "Em breve".
+// Quando uma ficar pronta, troque o component dela e remova-a desta lista.
+const telasEmBreve = [
+  ['missoes', 'Missões'],
+  ['conteudos', 'Conteúdos'],
+  ['feed', 'Feed da Comunidade'],
+  ['ranking', 'Ranking'],
+  ['desafios', 'Desafios'],
+  ['recompensas', 'Recompensas'],
+  ['notificacoes', 'Notificações'],
+  ['historico', 'Histórico'],
+  ['configuracoes', 'Configurações'],
+].map(([path, titulo]) => ({ path, name: path, component: EmBreve, meta: { titulo } }))
 
 /*
   Fluxo de acesso:
@@ -43,6 +58,7 @@ const router = createRouter({
       meta: { requerLogin: true },
       children: [
         { path: 'inicio', name: 'inicio', component: Inicio, meta: { titulo: 'Início' } },
+        ...telasEmBreve,
       ],
     },
 
