@@ -9,6 +9,6 @@ export const usuario = reactive({
   xp: 2450,
   xpProximoNivel: 3000,
   mc: 480,
-  ofensiva: 9,
+  ofensiva: 5,
   notificacoes: 5,
 })
