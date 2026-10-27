@@ -6,9 +6,9 @@ export const usuario = reactive({
   nome: 'Maria Alves',
   iniciais: 'MA',
   nivel: 'Nível 7 - Guardião',
-  xp: 2450,
+  xp: 3450,
   xpProximoNivel: 3000,
   mc: 480,
-  ofensiva: 5,
-  notificacoes: 5,
+  ofensiva: 9,
+  notificacoes: 3,
 })

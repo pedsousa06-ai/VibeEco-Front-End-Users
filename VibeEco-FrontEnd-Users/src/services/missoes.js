@@ -1,18 +1,11 @@
 // Missões simuladas, sem API. Os dados ficam em memória: recarregar a página (F5) volta ao início.
 // Quando houver back-end, troque estas funções por chamadas reais e mantenha os mesmos nomes.
+// Não há envio de foto nem de mídia: cada etapa é só confirmada (ou respondida, no caso do quiz).
 import { reactive } from 'vue'
 import { usuario } from '@/services/usuario'
 
 /* ---------- Construtores de etapa ---------- */
 const confirmar = (titulo, xp, concluida = false) => ({ titulo, xp, tipo: 'confirmar', concluida })
-const foto = (titulo, xp, necessarias, enviadas = 0, concluida = false) => ({
-  titulo,
-  xp,
-  tipo: 'foto',
-  fotosNecessarias: necessarias,
-  fotosEnviadas: concluida ? necessarias : enviadas,
-  concluida,
-})
 const quiz = (titulo, xp, perguntas) => ({ titulo, xp, tipo: 'quiz', perguntas, concluida: false })
 
 function criar(dados) {
@@ -24,7 +17,7 @@ function criar(dados) {
     descricao:
       dados.descricao ?? `${dados.resumo} Complete todas as etapas para ganhar XP e Moedas Verdes.`,
     dica:
-      dados.dica ?? 'Leia com atenção cada etapa antes de começar e registre tudo para não perder o progresso.',
+      dados.dica ?? 'Leia com atenção cada etapa antes de começar e anote tudo para não perder o progresso.',
     etapas: dados.etapas.map((etapa, i) => ({ id: i + 1, ...etapa })),
   }
 }
@@ -47,7 +40,7 @@ const missoes = reactive([
     etapas: [
       confirmar('Assistir ao vídeo introdutório', 20, true),
       confirmar('Separar resíduos por categoria', 40, true),
-      foto('Fotografar o descarte correto', 50, 5, 3),
+      confirmar('Fotografar o descarte correto', 50),
       quiz('Responder quiz sobre reciclagem', 40, [
         {
           texto: 'Qual cor de lixeira é usada para descartar plástico?',
@@ -79,7 +72,7 @@ const missoes = reactive([
     participando: true,
     etapas: [
       confirmar('Ler o guia de economia de água', 20, true),
-      foto('Registrar a economia diária', 20, 2, 1),
+      confirmar('Anotar a economia diária', 20, true),
       confirmar('Reduzir o tempo do banho', 20),
       confirmar('Verificar vazamentos em casa', 20),
       confirmar('Compartilhar sua experiência', 20),
@@ -100,7 +93,7 @@ const missoes = reactive([
       confirmar('Participar de um mutirão', 40, true),
       confirmar('Plantar uma muda', 40, true),
       confirmar('Regar e cuidar por uma semana', 40, true),
-      foto('Registrar a colheita', 40, 3),
+      confirmar('Anotar a colheita', 40),
     ],
   }),
   criar({
@@ -115,7 +108,7 @@ const missoes = reactive([
     etapas: [
       confirmar('Mapear aparelhos ligados sem uso', 20),
       confirmar('Desligar as luzes ao sair', 30),
-      foto('Registrar a economia', 30, 3),
+      confirmar('Anotar a economia', 30),
     ],
   }),
   criar({
@@ -130,8 +123,8 @@ const missoes = reactive([
     etapas: [
       confirmar('Escolher a espécie nativa', 50),
       confirmar('Preparar o solo', 60),
-      foto('Plantar a muda', 70, 2),
-      foto('Registrar o crescimento', 70, 1),
+      confirmar('Plantar a muda', 70),
+      confirmar('Acompanhar o crescimento', 70),
     ],
   }),
   criar({
@@ -146,7 +139,7 @@ const missoes = reactive([
     etapas: [
       confirmar('Montar a composteira', 45, true),
       confirmar('Separar os resíduos orgânicos', 45, true),
-      foto('Registrar a primeira semana', 45, 2, 0, true),
+      confirmar('Acompanhar a primeira semana', 45, true),
       confirmar('Usar o adubo produzido', 45, true),
     ],
   }),
@@ -162,7 +155,7 @@ const missoes = reactive([
     etapas: [
       confirmar('Planejar os trajetos da semana', 40, true),
       confirmar('Usar transporte sustentável por 5 dias', 40, true),
-      foto('Registrar um trajeto', 50, 1, 0, true),
+      confirmar('Anotar um trajeto', 50, true),
     ],
   }),
 ])
@@ -177,14 +170,10 @@ export function buscarMissao(id) {
 export const xpTotal = (m) => m.etapas.reduce((soma, e) => soma + e.xp, 0)
 export const etapasConcluidas = (m) => m.etapas.filter((e) => e.concluida).length
 
-// Etapa concluída vale 1; etapa de fotos em andamento vale a fração já enviada
+// Progresso = etapas concluídas / total de etapas
 export function progressoDe(m) {
   if (!m.etapas.length) return 0
-  const soma = m.etapas.reduce((acc, e) => {
-    if (e.concluida) return acc + 1
-    return e.tipo === 'foto' ? acc + e.fotosEnviadas / e.fotosNecessarias : acc
-  }, 0)
-  return Math.round((soma / m.etapas.length) * 100)
+  return Math.round((etapasConcluidas(m) / m.etapas.length) * 100)
 }
 
 // 'concluida' | 'andamento' | 'disponivel'
@@ -214,11 +203,4 @@ export function concluirEtapa(m, etapa) {
   const missaoConcluida = m.etapas.every((e) => e.concluida)
   if (missaoConcluida) usuario.mc += m.mc
   return { missaoConcluida }
-}
-
-// Registra uma foto; ao chegar no total pedido, a etapa é concluída automaticamente.
-export function enviarFoto(m, etapa) {
-  etapa.fotosEnviadas = Math.min(etapa.fotosEnviadas + 1, etapa.fotosNecessarias)
-  if (etapa.fotosEnviadas >= etapa.fotosNecessarias) return concluirEtapa(m, etapa)
-  return { missaoConcluida: false, parcial: true }
 }
