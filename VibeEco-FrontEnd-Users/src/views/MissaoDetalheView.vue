@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import Icone from '@/components/Icone.vue'
 import EtapaModal from '@/components/EtapaModal.vue'
 import {
-  buscarMissao, concluirEtapa, enviarFoto, etapaAtual, etapasConcluidas,
+  buscarMissao, concluirEtapa, etapaAtual, etapasConcluidas,
   participar, progressoDe, rotuloPrazo, statusDe, xpTotal,
 } from '@/services/missoes'
 
@@ -48,14 +48,6 @@ function aoConcluir() {
   const etapa = atual.value
   if (etapa) resultado(concluirEtapa(missao.value, etapa), etapa)
 }
-function aoEnviarFoto() {
-  const etapa = atual.value
-  if (!etapa) return
-  const r = enviarFoto(missao.value, etapa)
-  if (r.parcial) avisar(`Foto enviada! ${etapa.fotosEnviadas} de ${etapa.fotosNecessarias}.`)
-  else resultado(r, etapa)
-}
-
 function aoParticipar() {
   participar(missao.value) // TODO: confirmar a participação na API
   avisar('Você entrou na missão! Comece pela primeira etapa.')
@@ -136,12 +128,7 @@ const classeDificuldade = (d) => d.trim().toLowerCase().normalize('NFD').replace
                   <Icone v-else-if="estadoDa(etapa) === 'andamento'" nome="play" :tamanho="18" />
                 </span>
 
-                <span class="etapa-titulo">
-                  {{ etapa.titulo }}
-                  <small v-if="etapa.tipo === 'foto' && !etapa.concluida && etapa.fotosEnviadas">
-                    {{ etapa.fotosEnviadas }} de {{ etapa.fotosNecessarias }} fotos enviadas
-                  </small>
-                </span>
+                <span class="etapa-titulo">{{ etapa.titulo }}</span>
 
                 <span class="etapa-xp"><Icone nome="estrela" :tamanho="12" preenchido />{{ etapa.xp }} XP</span>
                 <span v-if="ROTULO_ESTADO[estadoDa(etapa)]" class="etapa-estado">
@@ -193,7 +180,6 @@ const classeDificuldade = (d) => d.trim().toLowerCase().normalize('NFD').replace
       :missao="missao"
       @fechar="modalAberto = false"
       @concluir="aoConcluir"
-      @foto="aoEnviarFoto"
     />
   </div>
 
@@ -407,12 +393,6 @@ const classeDificuldade = (d) => d.trim().toLowerCase().normalize('NFD').replace
 .etapa-titulo {
   flex: 1;
   min-width: 0;
-}
-.etapa-titulo small {
-  display: block;
-  margin-top: 2px;
-  font-size: 12px;
-  color: var(--texto-suave);
 }
 .etapa-xp {
   display: inline-flex;
