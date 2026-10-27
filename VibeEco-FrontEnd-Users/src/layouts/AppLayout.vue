@@ -20,6 +20,11 @@ const menu = [
   { nome: 'Histórico', to: '/historico', icone: 'historico' },
 ]
 
+// Item do menu fica ativo também nas telas internas dele (ex.: /missoes/3)
+function estaAtivo(caminho) {
+  return route.path === caminho || route.path.startsWith(caminho + '/')
+}
+
 const titulo = computed(() => route.meta.titulo || 'VibeEco')
 const busca = ref('')
 const menuAberto = ref(false)
@@ -54,7 +59,7 @@ function deslogar() {
       </div>
 
       <nav class="menu" aria-label="Navegação principal">
-        <RouterLink v-for="item in menu" :key="item.to" :to="item.to" class="menu-item" active-class="ativo">
+        <RouterLink v-for="item in menu" :key="item.to" :to="item.to" class="menu-item" :class="{ ativo: estaAtivo(item.to) }">
           <Icone :nome="item.icone" :tamanho="20" />
           <span>{{ item.nome }}</span>
           <span v-if="item.selo && usuario.notificacoes" class="selo" :aria-label="`${usuario.notificacoes} novas`">
@@ -72,7 +77,7 @@ function deslogar() {
           </div>
         </div>
 
-        <RouterLink to="/configuracoes" class="menu-item" active-class="ativo">
+        <RouterLink to="/configuracoes" class="menu-item" :class="{ ativo: estaAtivo('/configuracoes') }">
           <Icone nome="engrenagem" :tamanho="20" />
           <span>Configurações</span>
         </RouterLink>

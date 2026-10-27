@@ -10,11 +10,12 @@ import PrimeiroAcesso from '@/views/PrimeiroAcessoView.vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import Inicio from '@/views/InicioView.vue'
 import EmBreve from '@/views/EmBreveView.vue'
+import Missoes from '@/views/MissoesView.vue'
+import MissaoDetalhe from '@/views/MissaoDetalheView.vue'
 
 // Telas do menu que ainda não foram feitas: usam a tela "Em breve".
 // Quando uma ficar pronta, troque o component dela e remova-a desta lista.
 const telasEmBreve = [
-  ['missoes', 'Missões'],
   ['conteudos', 'Conteúdos'],
   ['feed', 'Feed da Comunidade'],
   ['ranking', 'Ranking'],
@@ -58,6 +59,8 @@ const router = createRouter({
       meta: { requerLogin: true },
       children: [
         { path: 'inicio', name: 'inicio', component: Inicio, meta: { titulo: 'Início' } },
+        { path: 'missoes', name: 'missoes', component: Missoes, meta: { titulo: 'Missões' } },
+        { path: 'missoes/:id', name: 'missao-detalhe', component: MissaoDetalhe, meta: { titulo: 'Missões' } },
         ...telasEmBreve,
       ],
     },

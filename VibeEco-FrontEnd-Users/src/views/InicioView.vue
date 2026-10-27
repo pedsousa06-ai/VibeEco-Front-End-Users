@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import Icone from '@/components/Icone.vue'
 import { usuario } from '@/services/usuario'
+import { missoesLista, progressoDe, rotuloPrazo, statusDe, xpTotal } from '@/services/missoes'
 
 // TODO: trocar os dados mockados abaixo por chamadas à API
 const porcentagemNivel = computed(() =>
@@ -31,11 +32,21 @@ const resumo = [
   { valor: '#14', rotulo: 'Posição no Ranking', detalhe: 'Top 5% na instituição', icone: 'trofeu', cor: 'laranja' },
 ]
 
-const missoes = [
-  { id: 1, categoria: 'Reciclagem', dificuldade: 'Médio', titulo: 'Descarte Consciente', xp: 150, prazo: '3 dias', progresso: 65 },
-  { id: 2, categoria: 'Água', dificuldade: 'Fácil', titulo: 'Economia de Água', xp: 100, prazo: '4 dias', progresso: 30 },
-  { id: 3, categoria: 'Alimentação', dificuldade: 'Difícil', titulo: 'Horta Comunitária', xp: 200, prazo: '2 dias', progresso: 80 },
-]
+// Missões em andamento vêm do mesmo serviço da tela de Missões
+const missoes = computed(() =>
+  missoesLista
+    .filter((m) => statusDe(m) === 'andamento')
+    .slice(0, 3)
+    .map((m) => ({
+      id: m.id,
+      categoria: m.categoria,
+      dificuldade: m.dificuldade,
+      titulo: m.titulo,
+      xp: xpTotal(m),
+      prazo: rotuloPrazo(m.prazo),
+      progresso: progressoDe(m),
+    }))
+)
 
 const conteudos = [
   { id: 1, categoria: 'Reciclagem', titulo: 'Guia de Reciclagem Doméstica', leitura: '8 min leitura', xp: 50, concluido: true },
@@ -135,7 +146,7 @@ function classeDificuldade(texto) {
             <RouterLink to="/missoes" class="ver-todas">Ver todas <Icone nome="seta" :tamanho="14" /></RouterLink>
           </div>
 
-          <article v-for="missao in missoes" :key="missao.id" class="card missao">
+          <RouterLink v-for="missao in missoes" :key="missao.id" :to="`/missoes/${missao.id}`" class="card missao">
             <div class="missao-cima">
               <div>
                 <div class="missao-tags">
@@ -167,7 +178,7 @@ function classeDificuldade(texto) {
             >
               <div class="barra-preenchimento" :style="{ width: (montado ? missao.progresso : 0) + '%' }"></div>
             </div>
-          </article>
+          </RouterLink>
         </section>
 
         <section aria-labelledby="titulo-conteudos">
@@ -522,12 +533,19 @@ function classeDificuldade(texto) {
 
 /* ---------- MISSÕES ---------- */
 .missao {
+  display: block;
+  color: inherit;
+  text-decoration: none;
   margin-bottom: 12px;
   padding: 16px 20px 18px;
   transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
 }
 .missao:last-child {
   margin-bottom: 0;
+}
+.missao:focus-visible {
+  outline: 3px solid #1fe05a;
+  outline-offset: 2px;
 }
 .missao:hover {
   transform: translateY(-2px);
