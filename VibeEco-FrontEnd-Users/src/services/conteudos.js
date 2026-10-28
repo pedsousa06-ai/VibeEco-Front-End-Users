@@ -18,5 +18,19 @@ const DEGRADE_CATEGORIA = {
 }
 
 function lerProgresso (){
-    
+    try{
+        return JSON.parse(localStorage.getItem(CHAVE)) ?? {}
+    } catch {
+        return {}
+    }
 }
+
+function salvarProgresso (progresso){
+    try {
+        localStorage.setItem(CHAVE, JSON.stringify(progresso))
+    } catch {
+        /* Por enquanto sem armazenamento disponível para ser salvo  */
+    }
+}
+
+// Se a imagem não existir, aparece um degradê da categoria em baixo.
