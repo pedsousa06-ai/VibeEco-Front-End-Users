@@ -12,11 +12,13 @@ import Inicio from '@/views/InicioView.vue'
 import EmBreve from '@/views/EmBreveView.vue'
 import Missoes from '@/views/MissoesView.vue'
 import MissaoDetalhe from '@/views/MissaoDetalheView.vue'
+import Conteudos from '@/views/ConteudosView.vue'
+import ConteudosDetalhe from '@/views/ConteudosDetalhesView.vue'
+
 
 // Telas do menu que ainda não foram feitas: usam a tela "Em breve".
 // Quando uma ficar pronta, troque o component dela e remova-a desta lista.
 const telasEmBreve = [
-  ['conteudos', 'Conteúdos'],
   ['feed', 'Feed da Comunidade'],
   ['ranking', 'Ranking'],
   ['desafios', 'Desafios'],
