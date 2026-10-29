@@ -63,7 +63,7 @@ const router = createRouter({
         { path: 'inicio', name: 'inicio', component: Inicio, meta: { titulo: 'Início' } },
         { path: 'missoes', name: 'missoes', component: Missoes, meta: { titulo: 'Missões' } },
         { path: 'missoes/:id', name: 'missao-detalhe', component: MissaoDetalhe, meta: { titulo: 'Missões' } },
-        { path: 'coonteudos', name: 'conteudos', component: Conteudos, meta: { titulo: 'Biblioteca de conteúdos' }},
+        { path: 'conteudos', name: 'conteudos', component: Conteudos, meta: { titulo: 'Biblioteca de conteúdos' }},
         { path: 'conteudos/:id', name: 'conteudo-detalhe', component: ConteudosDetalhe, meta: {
           titulo: 'Biblioteca de conteúdos'} },
         ...telasEmBreve,

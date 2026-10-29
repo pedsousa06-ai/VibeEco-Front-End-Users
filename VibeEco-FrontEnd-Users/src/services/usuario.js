@@ -12,5 +12,5 @@ export const usuario = reactive({
   xpProximoNivel: 3000,
   mc: 480,
   ofensiva: 9,
-  notificacoes: 3,
+  notificacoes: 10,
 })

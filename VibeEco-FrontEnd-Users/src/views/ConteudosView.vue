@@ -1,10 +1,10 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import Icone from '@/components/Icone.vue';
 import { CATEGORIAS, estiloCapa, listarConteudos } from '@/services/conteudos';
 
-const router = useRoute()
+const router = useRouter()
 
 const conteudos = ref([])
 const carregando = ref(true)
@@ -17,7 +17,7 @@ const normalizar = (texto) => texto.normalize('NFD').replace(/\p{Diacritic}/gu, 
 const filtrados = computed(() => {
     const termo = normalizar(busca.value.trim())
     return conteudos.value.filter((c) => {
-      const categoriaOK = filtro.value === 'Todos' || c.categorias === filtro.value
+      const categoriaOK = filtro.value === 'Todos' || normalizar(c.categoria) === normalizar(filtro.value)
       const buscaOK = !termo || normalizar(c.titulo).includes(termo)
       return categoriaOK && buscaOK
     })
@@ -75,7 +75,7 @@ onMounted(async() => {
             <span>{{ c.minutos }} min leitura</span>
             <span class="xp"><Icone nome="estrela" :tamanho="13" preenchido/>{{ c.xp }} XP</span>
           </div>
-          <button type="button" class="botao" :class="{ segundario: c.concluido }" @click="abrir (c.id)">
+          <button type="button" class="botao" :class="{ secundario: c.concluido }" @click="abrir (c.id)">
             {{  c.concluido ? 'Revisar conteúdo' : 'Iniciar conteúdo'  }}
           </button>
         </div>
