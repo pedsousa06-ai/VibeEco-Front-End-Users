@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import Icone from '@/components/Icone.vue'
 import { usuario } from '@/services/usuario'
 import { missoesLista, progressoDe, rotuloPrazo, statusDe, xpTotal } from '@/services/missoes'
+import { listarConteudos } from '@/services/conteudos'
 
 // TODO: trocar os dados mockados abaixo por chamadas à API
 const porcentagemNivel = computed(() =>
@@ -48,11 +49,24 @@ const missoes = computed(() =>
     }))
 )
 
-const conteudos = [
-  { id: 1, categoria: 'Reciclagem', titulo: 'Guia de Reciclagem Doméstica', leitura: '8 min leitura', xp: 50, concluido: true },
-  { id: 2, categoria: 'Energia', titulo: 'Energia Solar: Como Funciona', leitura: '12 min leitura', xp: 75, concluido: false },
-  { id: 3, categoria: 'Alimentação', titulo: 'Alimentação Sustentável', leitura: '6 min leitura', xp: 50, concluido: false },
-]
+const todosConteudos = ref([])
+onMounted(async () => {
+  todosConteudos.value = await listarConteudos()
+})
+
+const conteudos = computed(() => 
+  [...todosConteudos.value]
+    .sort((a, b) => Number(a.concluido) - Number(b.concluido))
+    .slice(0, 3)
+    .map((c) => ({
+      id: c.id,
+      categoria: c.categoria,
+      titulo: c.titulo,
+      leitura: `${c.minutos} min leitura`,
+      xp: c.xp,
+      concluido: c.concluido
+    }))
+)
 
 const diasSemana = [
   { letra: 'S', nome: 'Segunda' },
@@ -188,7 +202,7 @@ function classeDificuldade(texto) {
           </div>
 
           <div class="conteudos">
-            <article v-for="conteudo in conteudos" :key="conteudo.id" class="card conteudo">
+            <RouterLink v-for="conteudo in conteudos" :key="conteudo.id" :to="`/conteudos/${conteudos.id}`"" class="card conteudo">
               <div class="conteudo-topo">
                 <span class="tag">{{ conteudo.categoria }}</span>
                 <span v-if="conteudo.concluido" class="concluido">
@@ -202,7 +216,7 @@ function classeDificuldade(texto) {
                 <small>{{ conteudo.leitura }}</small>
                 <span class="xp"><Icone nome="estrela" :tamanho="13" preenchido />{{ conteudo.xp }} XP</span>
               </div>
-            </article>
+            </RouterLink>
           </div>
         </section>
       </div>
@@ -612,6 +626,8 @@ function classeDificuldade(texto) {
   gap: 12px;
   padding: 16px;
   transition: transform 0.15s, box-shadow 0.15s;
+  text-decoration: none;
+  color: inherit;
 }
 .conteudo:hover {
   transform: translateY(-2px);
