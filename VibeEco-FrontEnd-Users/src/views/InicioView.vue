@@ -202,7 +202,7 @@ function classeDificuldade(texto) {
           </div>
 
           <div class="conteudos">
-            <RouterLink v-for="conteudo in conteudos" :key="conteudo.id" :to="`/conteudos/${conteudos.id}`"" class="card conteudo">
+            <RouterLink v-for="conteudo in conteudos" :key="conteudo.id" :to="`/conteudos/${conteudo.id}`" class="card conteudo">
               <div class="conteudo-topo">
                 <span class="tag">{{ conteudo.categoria }}</span>
                 <span v-if="conteudo.concluido" class="concluido">

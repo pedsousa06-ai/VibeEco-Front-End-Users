@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Icone from '@/components/Icone.vue'
 import { concluirConteudo, estiloCapa, obterConteudo } from '@/services/conteudos'
+import { usuario } from '@/services/usuario'
 
 const route = useRoute()
 const router = useRouter()
@@ -52,6 +53,7 @@ async function avancar() {
     return
   }
   resultado.value = await concluirConteudo(conteudo.value.id, acertos.value, total.value)
+  if(resultado.value.xpGanho > 0) usuario.xp += resultado.value.xpGanho
   etapa.value = 'resultado'
 }
 

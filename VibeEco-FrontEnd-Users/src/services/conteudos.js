@@ -1,4 +1,4 @@
-import { conteudos } from "@/data/Conteudos";
+import { conteudos } from "@/data/conteudos"
 
 // No futuro quando o back-end existir, trocar o corpo das funções
 // por chamadas na API.
