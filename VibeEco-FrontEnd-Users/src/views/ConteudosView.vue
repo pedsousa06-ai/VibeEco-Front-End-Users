@@ -16,10 +16,15 @@ const normalizar = (texto) => texto.normalize('NFD').replace(/\p{Diacritic}/gu, 
 
 const filtrados = computed(() => {
     const termo = normalizar(busca.value.trim())
-    return conteudos.value.filter((c) => {
+
+    const listaFiltrada = conteudos.value.filter((c) => {
       const categoriaOK = filtro.value === 'Todos' || normalizar(c.categoria) === normalizar(filtro.value)
       const buscaOK = !termo || normalizar(c.titulo).includes(termo)
       return categoriaOK && buscaOK
+    })
+
+    return listaFiltrada.sort((a, b) => {
+      return (a.concluido === b.concluido) ? 0 : a.concluido ? 1: -1
     })
 })
 
@@ -62,10 +67,11 @@ onMounted(async() => {
 
     <ul v-else class="grade">
       <li v-for="c in filtrados" :key="c.id" class="card">
-        <div class="capa" :style="estiloCapa(c)">
+        <!-- Adicionamos a classe 'concluido' aqui -->
+        <div class="capa" :style="estiloCapa(c)" :class="{ 'concluido': c.concluido }">
           <span class="tag">{{ c.categoria }}</span>
           <span v-if="c.concluido" class="check" role="img" aria-label="Concluído">
-            <Icone nome="check" :tamanho="14"/>
+            <Icone nome="check" :tamanho="18"/>
           </span>
         </div>
 
@@ -192,18 +198,29 @@ onMounted(async() => {
   background-size: cover;
   background-position: center;
 }
+
+.capa.concluido::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.60); /* Camada branca translúcida de 55% */
+  z-index: 1;
+}
+
 .capa::after {
   content: '';
   position: absolute;
   inset: auto 0 0 0;
-  height: 50%;
+  height: 100%;
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.35));
+  z-index: 2;
 }
+
 .tag {
   position: absolute;
   left: 12px;
   bottom: 10px;
-  z-index: 1;
+  z-index: 3;
   padding: 3px 10px;
   border-radius: 99px;
   background: var(--verde-900);
@@ -211,17 +228,18 @@ onMounted(async() => {
   font-size: 12px;
   font-weight: 600;
 }
+
 .check {
   position: absolute;
   top: 12px;
   right: 12px;
-  z-index: 1;
+  z-index: 3;
   display: grid;
   place-items: center;
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: var(--verde-500);
+  background: var(--verde-700);
   color: #fff;
 }
  
