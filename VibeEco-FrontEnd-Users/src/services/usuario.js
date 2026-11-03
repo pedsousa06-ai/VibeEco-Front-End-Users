@@ -3,6 +3,7 @@
 import { reactive } from 'vue'
 
 export const usuario = reactive({
+  id: 1,
   nome: 'Maria Alves',
   email: "ana@vibeeco.com",
   foto: "/Maria.png",
