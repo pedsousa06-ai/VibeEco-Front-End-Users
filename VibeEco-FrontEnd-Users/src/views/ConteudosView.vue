@@ -1,404 +1,307 @@
 <script setup>
-import { computed, ref } from 'vue'
-import Icone from '@/components/Icone.vue'
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import Icone from '@/components/Icone.vue';
+import { CATEGORIAS, estiloCapa, listarConteudos } from '@/services/conteudos';
 
-// TODO: trocar os dados mockados abaixo por chamadas à API
-// As imagens ficam em public/conteudos/ (ex.: public/conteudos/reciclagem.jpg)
-const conteudos = [
-  { id: 1, categoria: 'Reciclagem', titulo: 'Guia de Reciclagem Doméstica', leitura: 8, xp: 50, concluido: true, imagem: '/conteudos/reciclagem.jpg' },
-  { id: 2, categoria: 'Energia', titulo: 'Energia Solar: Como Funciona', leitura: 12, xp: 75, concluido: false, imagem: '/conteudos/energia-solar.jpg' },
-  { id: 3, categoria: 'Alimentação', titulo: 'Alimentação Sustentável no Dia a Dia', leitura: 6, xp: 60, concluido: false, imagem: '/conteudos/alimentacao.jpg' },
-  { id: 4, categoria: 'Água', titulo: 'Consumo Consciente de Água', leitura: 7, xp: 50, concluido: true, imagem: '/conteudos/agua.jpg' },
-  { id: 5, categoria: 'Reciclagem', titulo: 'Compostagem em Casa', leitura: 10, xp: 40, concluido: false, imagem: '/conteudos/compostagem.jpg' },
-  { id: 6, categoria: 'Mobilidade', titulo: 'Mobilidade Urbana Sustentável', leitura: 9, xp: 60, concluido: false, imagem: '/conteudos/mobilidade.jpg' },
-  { id: 7, categoria: 'Biodiversidade', titulo: 'Biodiversidade e Ecossistemas', leitura: 11, xp: 70, concluido: false, imagem: '/conteudos/biodiversidade.jpg' },
-  { id: 8, categoria: 'Energia', titulo: 'Eficiência Energética em Casa', leitura: 8, xp: 50, concluido: true, imagem: '/conteudos/eficiencia-energetica.jpg' },
-  { id: 9, categoria: 'Biodiversidade', titulo: 'Plantio Nativo e Reflorestamento', leitura: 13, xp: 80, concluido: false, imagem: '/conteudos/reflorestamento.jpg' },
-]
+const router = useRouter()
 
-// Ordem dos filtros igual ao Figma
-const categorias = ['Todos', 'Água', 'Reciclagem', 'Energia', 'Alimentação', 'Biodiversidade', 'Mobilidade']
-
-// Cor de fundo exibida enquanto a foto carrega (ou se a imagem não existir)
-const fundoPorCategoria = {
-  Água: ['#0ea5e9', '#0c4a6e'],
-  Reciclagem: ['#22c55e', '#14532d'],
-  Energia: ['#facc15', '#a16207'],
-  Alimentação: ['#fb7185', '#9f1239'],
-  Biodiversidade: ['#4ade80', '#166534'],
-  Mobilidade: ['#a78bfa', '#4c1d95'],
-}
-function fundo(categoria) {
-  const [a, b] = fundoPorCategoria[categoria] || ['#4ade80', '#14532d']
-  return { background: `linear-gradient(135deg, ${a}, ${b})` }
-}
-
+const conteudos = ref([])
+const carregando = ref(true)
 const busca = ref('')
-const categoriaAtiva = ref('Todos')
+const filtro = ref('Todos')
+const categorias = ['Todos', ...CATEGORIAS]
 
-// Remove acentos e maiúsculas para a busca ("agua" encontra "Água")
-function normalizar(texto) {
-  return texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-}
+const normalizar = (texto) => texto.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
 
 const filtrados = computed(() => {
-  const termo = normalizar(busca.value.trim())
-  return conteudos.filter((c) => {
-    const bateCategoria = categoriaAtiva.value === 'Todos' || c.categoria === categoriaAtiva.value
-    const bateBusca = !termo || normalizar(c.titulo).includes(termo)
-    return bateCategoria && bateBusca
-  })
+    const termo = normalizar(busca.value.trim())
+
+    const listaFiltrada = conteudos.value.filter((c) => {
+      const categoriaOK = filtro.value === 'Todos' || normalizar(c.categoria) === normalizar(filtro.value)
+      const buscaOK = !termo || normalizar(c.titulo).includes(termo)
+      return categoriaOK && buscaOK
+    })
+
+    return listaFiltrada.sort((a, b) => {
+      return (a.concluido === b.concluido) ? 0 : a.concluido ? 1: -1
+    })
 })
 
-function limparFiltros() {
-  busca.value = ''
-  categoriaAtiva.value = 'Todos'
+
+function abrir(id){
+  router.push({ name: 'conteudo-detalhe', params: { id } })
 }
 
-// Se a foto não carregar, some a <img> e fica só o fundo em degradê
-function esconderImagem(evento) {
-  evento.target.style.display = 'none'
-}
+onMounted(async() => {
+  conteudos.value = await listarConteudos()
+  carregando.value = false
+})
 </script>
 
 <template>
-  <div class="conteudos-view">
-    <!-- BUSCA E FILTROS -->
-    <section class="filtros" aria-label="Buscar e filtrar conteúdos">
-      <label class="busca">
-        <span class="sr-only">Buscar conteúdos</span>
-        <svg
-          class="busca-icone"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-3.5-3.5" />
-        </svg>
-        <input v-model="busca" type="search" placeholder="Buscar conteúdos..." />
-      </label>
+  <section class="conteudos">
+    <label class="busca">
+      <Icone nome="busca" :tamanho="18"/>
+      <input v-model="busca" type="search" placeholder="Buscar conteúdos..." aria-label="Buscar conteúdos" />
+    </label>
 
-      <div class="chips" role="group" aria-label="Filtrar por categoria">
-        <button
-          v-for="categoria in categorias"
-          :key="categoria"
-          type="button"
-          class="chip"
-          :class="{ 'chip-ativo': categoria === categoriaAtiva }"
-          :aria-pressed="categoria === categoriaAtiva"
-          @click="categoriaAtiva = categoria"
-        >
-          {{ categoria }}
-        </button>
-      </div>
-    </section>
+    <div class="filtros" role="group" aria-label="Filtrar por categoria">
+      <button
+        v-for="categoria in categorias"
+        :key="categoria"
+        type="button"
+        class="chip"
+        :class="{ ativo : filtro === categoria }"
+        :aria-pressed="filtro === categoria"
+        @click="filtro = categoria"
+      >
+      {{ categoria }}
+      </button>
+    </div>
 
-    <!-- LISTA -->
-    <section aria-label="Lista de conteúdos">
-      <p class="sr-only" aria-live="polite">
-        {{ filtrados.length }} {{ filtrados.length === 1 ? 'conteúdo encontrado' : 'conteúdos encontrados' }}
-      </p>
+    <p v-if="carregando" class="aviso">carregando conteúdos...</p>
+    <p v-else-if="!filtrados.length" class="aviso">
+      Nenhum conteúdo encontrado. Tente outro termo ou escolha outra categoria
+    </p>
 
-      <div v-if="filtrados.length" class="lista">
-        <article v-for="conteudo in filtrados" :key="conteudo.id" class="card conteudo">
-          <div class="foto" :style="fundo(conteudo.categoria)">
-            <img :src="conteudo.imagem" alt="" loading="lazy" @error="esconderImagem" />
+    <ul v-else class="grade">
+      <li v-for="c in filtrados" :key="c.id" class="card">
+        <!-- Adicionamos a classe 'concluido' aqui -->
+        <div class="capa" :style="estiloCapa(c)" :class="{ 'concluido': c.concluido }">
+          <span class="tag">{{ c.categoria }}</span>
+          <span v-if="c.concluido" class="check" role="img" aria-label="Concluído">
+            <Icone nome="check" :tamanho="18"/>
+          </span>
+        </div>
 
-            <span class="foto-tag">{{ conteudo.categoria }}</span>
-
-            <span v-if="conteudo.concluido" class="foto-check" title="Concluído">
-              <Icone nome="check" :tamanho="14" />
-              <span class="sr-only">Concluído</span>
-            </span>
+        <div class="corpo">
+          <h3>{{ c.titulo }}</h3>
+          <div class="meta">
+            <span>{{ c.minutos }} min leitura</span>
+            <span class="xp"><Icone nome="estrela" :tamanho="13" preenchido/>{{ c.xp }} XP</span>
           </div>
-
-          <div class="conteudo-info">
-            <strong>{{ conteudo.titulo }}</strong>
-
-            <div class="conteudo-meta">
-              <small class="leitura">
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  aria-hidden="true"
-                >
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 7v5l3 2" />
-                </svg>
-                {{ conteudo.leitura }} min leitura
-              </small>
-              <span class="xp">+{{ conteudo.xp }} XP</span>
-            </div>
-
-            <!-- TODO: ligar à rota de detalhe quando existir (ex.: /conteudos/:id) -->
-            <button type="button" class="botao" :class="{ 'botao-suave': conteudo.concluido }">
-              {{ conteudo.concluido ? 'Revisar conteúdo' : 'Iniciar conteúdo' }}
-            </button>
-          </div>
-        </article>
-      </div>
-
-      <div v-else class="vazio card">
-        <strong>Nenhum conteúdo encontrado</strong>
-        <p>Tente outro termo de busca ou escolha uma categoria diferente.</p>
-        <button type="button" class="botao botao-suave botao-auto" @click="limparFiltros">
-          Limpar filtros
-        </button>
-      </div>
-    </section>
-  </div>
+          <button type="button" class="botao" :class="{ secundario: c.concluido }" @click="abrir (c.id)">
+            {{  c.concluido ? 'Revisar conteúdo' : 'Iniciar conteúdo'  }}
+          </button>
+        </div>
+      </li>
+    </ul>
+  </section>
 </template>
 
 <style scoped>
-.conteudos-view {
+.conteudos {
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
-
-/* ---------- BASE COMPARTILHADA (mesmo padrão da InicioView) ---------- */
-.card {
-  border: 1px solid var(--borda);
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 1px 2px rgba(18, 38, 26, 0.04);
-}
-.xp {
-  display: inline-flex;
-  align-items: center;
-  color: #d97706;
-  font-size: 13px;
-  font-weight: 700;
-}
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-/* ---------- BUSCA E FILTROS ---------- */
-.filtros {
-  display: grid;
-  gap: 14px;
-}
+ 
 .busca {
-  position: relative;
-  display: block;
-  width: min(100%, 340px);
-}
-.busca-icone {
-  position: absolute;
-  top: 50%;
-  left: 12px;
-  transform: translateY(-50%);
-  color: var(--texto-suave);
-  pointer-events: none;
-}
-.busca input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
-  padding: 10px 14px 10px 38px;
+  max-width: 420px;
+  height: 40px;
+  padding: 0 12px;
+  box-sizing: border-box;
   border: 1px solid var(--borda);
   border-radius: 10px;
   background: #fff;
-  font: inherit;
-  font-size: 13px;
-  color: inherit;
-}
-.busca input::placeholder {
   color: var(--texto-suave);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
-.busca input:focus-visible {
-  outline: 2px solid var(--verde-600);
-  outline-offset: 2px;
-  border-color: transparent;
+.busca:focus-within {
+  border-color: var(--verde-600);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
 }
-
-.chips {
+.busca input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--texto);
+}
+ 
+.filtros {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 .chip {
-  padding: 6px 14px;
+  height: 34px;
+  padding: 0 16px;
   border: 1px solid var(--borda);
   border-radius: 99px;
   background: #fff;
+  color: var(--texto);
   font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  color: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 .chip:hover {
-  border-color: #bfe0c8;
-  background: var(--verde-100);
+  border-color: var(--verde-600);
 }
-.chip-ativo,
-.chip-ativo:hover {
-  border-color: #126b36;
-  background: #126b36;
+.chip.ativo {
+  border-color: var(--verde-900);
+  background: var(--verde-900);
   color: #fff;
 }
-.chip:focus-visible {
-  outline: 2px solid var(--verde-600);
+.chip:focus-visible,
+.botao:focus-visible {
+  outline: 3px solid #1fe05a;
   outline-offset: 2px;
 }
-
-/* ---------- LISTA ---------- */
-.lista {
+ 
+.aviso {
+  margin: 0;
+  padding: 48px 24px;
+  border: 1px dashed var(--borda);
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+  color: var(--texto-suave);
+}
+ 
+.grade {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
 }
-.conteudo {
+ 
+.card {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border: 1px solid var(--borda);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(18, 38, 26, 0.04);
   transition: transform 0.15s, box-shadow 0.15s;
 }
-.conteudo:hover {
+.card:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 24px -12px rgba(18, 38, 26, 0.25);
 }
-
-/* Foto do card */
-.foto {
+ 
+.capa {
   position: relative;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
+  height: 140px;
+  background-size: cover;
+  background-position: center;
 }
-.foto img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.foto-tag {
+
+.capa.concluido::before {
+  content: '';
   position: absolute;
-  left: 10px;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.60); /* Camada branca translúcida de 55% */
+  z-index: 1;
+}
+
+.capa::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 100%;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.35));
+  z-index: 2;
+}
+
+.tag {
+  position: absolute;
+  left: 12px;
   bottom: 10px;
+  z-index: 3;
   padding: 3px 10px;
   border-radius: 99px;
-  background: rgba(8, 50, 26, 0.88);
+  background: var(--verde-900);
   color: #fff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
-.foto-check {
+
+.check {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background: #16a34a;
+  background: var(--verde-700);
   color: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }
-
-/* Texto do card */
-.conteudo-info {
+ 
+.corpo {
   display: flex;
-  flex: 1;
   flex-direction: column;
-  gap: 8px;
-  padding: 14px 16px 16px;
+  flex: 1;
+  gap: 10px;
+  padding: 16px;
 }
-.conteudo-info strong {
-  font-size: 14px;
+.corpo h3 {
+  margin: 0;
+  font-size: 15px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.3;
 }
-.conteudo-meta {
+.meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 4px;
-}
-.leitura {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
   font-size: 12px;
   color: var(--texto-suave);
 }
-
-/* Botões */
-.botao {
-  width: 100%;
-  margin-top: auto;
-  padding: 9px 16px;
-  border: 1px solid #126b36;
-  border-radius: 8px;
-  background: #126b36;
-  font: inherit;
+.xp {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #8a5a00;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
+}
+.xp svg {
+  color: #f5b301;
+}
+ 
+.botao {
+  margin-top: auto;
+  height: 40px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--verde-900);
   color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s;
 }
 .botao:hover {
-  border-color: #0d5429;
-  background: #0d5429;
+  background: var(--verde-950);
 }
-.botao-suave {
-  border-color: var(--borda);
-  background: #f1f5f2;
-  color: #1f3a2a;
-}
-.botao-suave:hover {
-  border-color: #bfe0c8;
-  background: var(--verde-100);
-}
-.botao:focus-visible {
-  outline: 2px solid var(--verde-600);
-  outline-offset: 3px;
-}
-.botao-auto {
-  width: auto;
-}
-
-/* ---------- ESTADO VAZIO ---------- */
-.vazio {
-  display: grid;
-  justify-items: center;
-  gap: 6px;
-  padding: 40px 20px;
-  text-align: center;
-}
-.vazio strong {
-  font-size: 16px;
-}
-.vazio p {
-  margin: 0 0 10px;
-  font-size: 14px;
+.botao.secundario {
+  background: var(--fundo);
   color: var(--texto-suave);
 }
-
+.botao.secundario:hover {
+  background: var(--verde-100);
+  color: var(--texto);
+}
+ 
 @media (prefers-reduced-motion: reduce) {
-  .conteudo,
+  .card,
   .chip,
   .botao {
     transition: none;
