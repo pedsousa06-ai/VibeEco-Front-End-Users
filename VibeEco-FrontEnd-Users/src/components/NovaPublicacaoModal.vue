@@ -10,6 +10,15 @@ defineProps({
     categorias: { type: Array, default: () => [] }
 })
 
+const emit = defineEmits(['fechar', 'publicar'])
+
+const texto = ref('')
+const categoria = ref('')
+const foto = ref(null)
+const entradaFoto = ref(null)
+const campoTexto = ref(null)
+const erroLocal = ref('')
+
 
 
 </script>
