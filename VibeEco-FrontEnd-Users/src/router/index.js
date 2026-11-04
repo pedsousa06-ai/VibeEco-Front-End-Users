@@ -15,12 +15,11 @@ import MissaoDetalhe from '@/views/MissaoDetalheView.vue'
 import Conteudos from '@/views/ConteudosView.vue'
 import ConteudosDetalhe from '@/views/ConteudosDetalhesView.vue'
 import Feed from '@/views/FeedView.vue'
-
+import Ranking from '@/views/RankingView.vue'
 
 // Telas do menu que ainda não foram feitas: usam a tela "Em breve".
 // Quando uma ficar pronta, troque o component dela e remova-a desta lista.
 const telasEmBreve = [
-  ['ranking', 'Ranking'],
   ['desafios', 'Desafios'],
   ['recompensas', 'Recompensas'],
   ['notificacoes', 'Notificações'],
@@ -63,10 +62,15 @@ const router = createRouter({
         { path: 'inicio', name: 'inicio', component: Inicio, meta: { titulo: 'Início' } },
         { path: 'missoes', name: 'missoes', component: Missoes, meta: { titulo: 'Missões' } },
         { path: 'missoes/:id', name: 'missao-detalhe', component: MissaoDetalhe, meta: { titulo: 'Missões' } },
-        { path: 'conteudos', name: 'conteudos', component: Conteudos, meta: { titulo: 'Biblioteca de conteúdos' }},
-        { path: 'conteudos/:id', name: 'conteudo-detalhe', component: ConteudosDetalhe, meta: {
-          titulo: 'Biblioteca de conteúdos'} },
+        { path: 'conteudos', name: 'conteudos', component: Conteudos, meta: { titulo: 'Biblioteca de conteúdos' } },
+        {
+          path: 'conteudos/:id',
+          name: 'conteudo-detalhe',
+          component: ConteudosDetalhe,
+          meta: { titulo: 'Biblioteca de conteúdos' },
+        },
         { path: 'feed', name: 'feed', component: Feed, meta: { titulo: 'Feed da Comunidade' } },
+        { path: 'ranking', name: 'ranking', component: Ranking, meta: { titulo: 'Ranking' } },
         ...telasEmBreve,
       ],
     },
