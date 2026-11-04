@@ -14,12 +14,12 @@ import Missoes from '@/views/MissoesView.vue'
 import MissaoDetalhe from '@/views/MissaoDetalheView.vue'
 import Conteudos from '@/views/ConteudosView.vue'
 import ConteudosDetalhe from '@/views/ConteudosDetalhesView.vue'
+import Feed from '@/views/FeedView.vue'
 
 
 // Telas do menu que ainda não foram feitas: usam a tela "Em breve".
 // Quando uma ficar pronta, troque o component dela e remova-a desta lista.
 const telasEmBreve = [
-  ['feed', 'Feed da Comunidade'],
   ['ranking', 'Ranking'],
   ['desafios', 'Desafios'],
   ['recompensas', 'Recompensas'],
@@ -66,6 +66,7 @@ const router = createRouter({
         { path: 'conteudos', name: 'conteudos', component: Conteudos, meta: { titulo: 'Biblioteca de conteúdos' }},
         { path: 'conteudos/:id', name: 'conteudo-detalhe', component: ConteudosDetalhe, meta: {
           titulo: 'Biblioteca de conteúdos'} },
+        { path: 'feed', name: 'feed', component: Feed, meta: { titulo: 'Feed da Comunidade' } },
         ...telasEmBreve,
       ],
     },
