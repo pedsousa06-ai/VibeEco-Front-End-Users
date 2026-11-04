@@ -3,10 +3,12 @@
 import { reactive } from 'vue'
 
 export const usuario = reactive({
-  nome: 'Maria Alves',
-  email: "ana@vibeeco.com",
-  foto: "/Maria.png",
-  iniciais: 'MA',
+  id: 2,
+  nome: 'Ana Silva',
+  email: 'ana@vibeeco.com',
+  senha: 'senha_hash_456',
+  foto:  'https://exemplo.com/fotos/ana.jpg',
+  iniciais: 'AS',
   nivel: 'Nível 7 - Guardião',
   xp: 2450,
   xpProximoNivel: 3000,

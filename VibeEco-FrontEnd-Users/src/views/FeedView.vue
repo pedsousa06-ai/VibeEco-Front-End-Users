@@ -10,7 +10,7 @@ const carregando = ref(true)
 const erroFeed = ref('')
 
 // TODO: preencher com as categorias da API ([{ id, nome }]) quando existir uma rota que as liste
-const categoriaPost = []
+const categoriasPost = []
 
 const modalAberto = ref(false)
 const enviando = ref(false)
@@ -137,7 +137,7 @@ const desafios = [
 
           <section class="card bloco">
             <h3><span>Desafios Ativos</span></h3>
-            <div v-for="d in desafios" :key="d.id" class="desafios">
+            <div v-for="d in desafios" :key="d.id" class="desafio">
                 <strong>{{ d.titulo }}</strong>
                 <small>{{ d.detalhe }}</small>
             </div>

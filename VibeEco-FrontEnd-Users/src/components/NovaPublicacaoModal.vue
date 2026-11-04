@@ -43,8 +43,8 @@ function enviar(){
         return
     }
     emit('publicar', { 
-        Texto: texto.value.trim(),
-         categoria: categoria.value,
+        texto: texto.value.trim(),
+        categoria: categoria.value,
         foto: foto.value
         })
 }
