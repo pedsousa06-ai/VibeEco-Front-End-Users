@@ -132,10 +132,12 @@ function fechar() {
 </template>
 
 <style scoped>
+
 .pagina {
   display: grid;
   gap: 18px;
   max-width: 840px;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
 }
 
 /* ---------- BARRA ---------- */

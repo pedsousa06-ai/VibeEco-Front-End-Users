@@ -113,6 +113,7 @@ onBeforeUnmount(() => {
   height: 100%;
   background: #fff;
   box-shadow: -20px 0 50px -20px rgba(0, 0, 0, 0.4);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
 }
 .topo {
   display: flex;
@@ -133,6 +134,7 @@ onBeforeUnmount(() => {
   border-radius: 10px;
   background: transparent;
   color: inherit;
+  font: inherit;
   cursor: pointer;
   transition: background 0.15s;
 }
