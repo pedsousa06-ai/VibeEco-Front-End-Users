@@ -1,1 +1,17 @@
-/* Alto contrate */
+/* Alto contrate: redifine as cores base que o AppLayout compartilha com as telas. */
+html[data-contraste='alto'] .app {
+    --texto: #000;
+    --texto-suave: #1f2a24;
+    --borda: #5a6b60;
+    --fundo: #fff;
+    --verde-100: #c4ecd2;
+}
+
+/* Animações desligadas: remove trasições e movimentos da interface. */
+html[data-animacoes='off'] *,
+html[data-animacoes='off'] *::before,
+html[data-animacoes='off'] *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+}
