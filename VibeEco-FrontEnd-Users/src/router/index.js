@@ -16,12 +16,12 @@ import Conteudos from '@/views/ConteudosView.vue'
 import ConteudosDetalhe from '@/views/ConteudosDetalhesView.vue'
 import Feed from '@/views/FeedView.vue'
 import Ranking from '@/views/RankingView.vue'
+import Recompensas from '@/views/RecompensasView.vue'
 
 // Telas do menu que ainda não foram feitas: usam a tela "Em breve".
 // Quando uma ficar pronta, troque o component dela e remova-a desta lista.
 const telasEmBreve = [
   ['desafios', 'Desafios'],
-  ['recompensas', 'Recompensas'],
   ['notificacoes', 'Notificações'],
   ['historico', 'Histórico'],
   ['configuracoes', 'Configurações'],
@@ -71,6 +71,7 @@ const router = createRouter({
         },
         { path: 'feed', name: 'feed', component: Feed, meta: { titulo: 'Feed da Comunidade' } },
         { path: 'ranking', name: 'ranking', component: Ranking, meta: { titulo: 'Ranking' } },
+        { path: 'recompensas', name: 'recompensas', component: Recompensas, meta: { titulo: 'Recompensas' } },
         ...telasEmBreve,
       ],
     },
