@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import Icone from './Icone.vue';
 import { usuario } from '@/services/usuario.js';
 
