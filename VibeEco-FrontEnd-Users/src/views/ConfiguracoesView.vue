@@ -6,7 +6,6 @@ import Interruptor from '@/components/Interruptor.vue';
 import { sair } from '@/services/auth';
 import { configuracoes } from '@/services/configuracoes';
 import { usuario } from '@/services/usuario';
-import { I } from 'vue-router/dist/index-u4XkZVDG.js';
 
 const router = useRouter()
 
