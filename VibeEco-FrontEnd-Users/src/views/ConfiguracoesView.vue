@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeMount, onBeforeUnmount, ref } from 'vue';
+import { onBeforeUnmount, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Icone from '@/components/Icone.vue';
 import Interruptor from '@/components/Interruptor.vue';
@@ -11,7 +11,7 @@ const router = useRouter()
 
 const tamanhos = [
     { valor: 'pequeno', rotulo: 'Pequeno'},
-    { valor: 'medio', rotulo: 'Medio'},
+    { valor: 'medio', rotulo: 'Médio'},
     { valor: 'grande', rotulo: 'Grande'},
 ]
 
@@ -52,7 +52,7 @@ function deslogar() {
                 <header class="cabecalho">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> 
-                        <path d="M19 21v-2a4 4 0 0 0-4-4h9a4 4 0 0 0-4 4v2" />
+                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                     </svg>
                     <h2 id="t-conta">Conta</h2>
@@ -96,7 +96,7 @@ function deslogar() {
 
                 <div class="linha">
                     <div class="texto">
-                        <strong id="l-constraste">Alto contraste</strong>
+                        <strong id="l-contraste">Alto contraste</strong>
                         <small>Aumenta o contraste das cores</small>
                     </div>
                     <Interruptor v-model="configuracoes.altoContraste" rotulo-id="l-contraste" />
@@ -115,7 +115,8 @@ function deslogar() {
                         role="radio"
                         class="segmento"
                         :class="{ ativo: configuracoes.tamanhoFonte === t.valor}"
-                        :aria-checked="configuracoes.tamanhoFonte = t.valor"
+                        :aria-checked="configuracoes.tamanhoFonte === t.valor"
+                        @click="configuracoes.tamanhoFonte = t.valor"
                         >
                         {{ t.rotulo }}
                         </button>
@@ -145,7 +146,7 @@ function deslogar() {
                 :key="item.titulo"
                 type="button"
                 class="linha clicavel"
-                @click="avisar(`${item.titulo}: dispinível em breve.`)"
+                @click="avisar(`${item.titulo}: disponível em breve.`)"
                 >
                 <span class="texto">
                     <strong>{{ item.titulo }}</strong>
@@ -181,7 +182,7 @@ function deslogar() {
 
             <button type="button" class="sair" @click="deslogar">
                 <Icone nome="sair" :tamanho="18" />
-                Saida da conta
+                Sair da conta
             </button>
         </div>
 
