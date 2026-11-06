@@ -211,7 +211,7 @@ const classeDificuldade = (d) => d.trim().toLowerCase().normalize('NFD').replace
   padding: 20px;
   border: 1px solid var(--borda);
   border-radius: 16px;
-  background: #fff;
+  background: var(--superficie);
   box-shadow: 0 1px 2px rgba(18, 38, 26, 0.04);
   transition: transform 0.15s, box-shadow 0.15s;
 }

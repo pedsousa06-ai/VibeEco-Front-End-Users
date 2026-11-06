@@ -141,6 +141,7 @@ function deslogar() {
   --texto: #12261a;
   --texto-suave: #64756a;
   --largura-menu: 256px;
+  --superficie: #fff;
 
   min-height: 100vh;
   background: var(--fundo);
