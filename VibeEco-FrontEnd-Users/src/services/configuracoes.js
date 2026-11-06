@@ -15,6 +15,7 @@ const PADRAO = {
      aparecerNoRanking: true,
      atividadesVisiveis: false,
      perfilPublico: true,
+     tema: 'claro', // 'claro' | 'escuro'
 }
 
 const ESCALA = { pequeno: 0.9, medio: 1, grande: 1.12}
@@ -35,12 +36,14 @@ function aplicar() {
     raiz.dataset.contraste = configuracoes.altoContraste ? 'alto' : 'normal'
     raiz.dataset.animacoes = configuracoes.animacoes ? 'on' : 'off'
     raiz.style.zoom = String(ESCALA[configuracoes.tamanhoFonte] ?? 1)
+    raiz.dataset.tema = configuracoes.tema === 'escuro' ? 'escuro' : 'claro'
 }
 
 aplicar()
 watch(
     configuracoes,
     () => {
+        aplicar()
         try{
             localStorage.setItem(CHAVE, JSON.stringify(configuracoes))
         } catch {

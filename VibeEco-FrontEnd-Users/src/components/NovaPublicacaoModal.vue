@@ -150,7 +150,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', aoApertarTecla))
   padding: 20px;
   box-sizing: border-box;
   border-radius: 16px;
-  background: #fff;
+  background: var(--superficie);
   box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.4);
 }
 .topo {

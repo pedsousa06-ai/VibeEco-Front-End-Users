@@ -96,6 +96,18 @@ function deslogar() {
 
                 <div class="linha">
                     <div class="texto">
+                        <strong id="l-tema">Tema</strong>
+                        <small>Troca o tema do site</small>
+                    </div>
+                    <Interruptor 
+                    :model-value="configuracoes.tema === 'escuro'"
+                    @update:model-value="configuracoes.tema = $event ? 'escuro' : 'claro'"
+                    rotulo-id="l-tema"
+                    />
+                </div>
+
+                <div class="linha">
+                    <div class="texto">
                         <strong id="l-contraste">Alto contraste</strong>
                         <small>Aumenta o contraste das cores</small>
                     </div>
@@ -208,7 +220,7 @@ function deslogar() {
   overflow: hidden;
   border: 1px solid var(--borda);
   border-radius: 16px;
-  background: #fff;
+  background: var(--superficie);
   box-shadow: 0 1px 2px rgba(18, 38, 26, 0.04);
 }
 .cabecalho {

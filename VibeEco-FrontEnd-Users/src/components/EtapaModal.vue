@@ -128,7 +128,7 @@ function enviarQuiz() {
   box-sizing: border-box;
   overflow-y: auto;
   border-radius: 20px;
-  background: #fff;
+  background: var(--superficie);
   color: #12261a;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
 }

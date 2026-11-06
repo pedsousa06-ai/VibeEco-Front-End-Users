@@ -1,4 +1,4 @@
-/* Alto contrate: redifine as cores base que o AppLayout compartilha com as telas. */
+/* Alto contraste: redifine as cores base que o AppLayout compartilha com as telas. */
 html[data-contraste='alto'] .app {
     --texto: #000;
     --texto-suave: #1f2a24;
@@ -7,11 +7,22 @@ html[data-contraste='alto'] .app {
     --verde-100: #c4ecd2;
 }
 
-/* Animações desligadas: remove trasições e movimentos da interface. */
+/* Animações desligadas: remove transições e movimentos da interface. */
 html[data-animacoes='off'] *,
 html[data-animacoes='off'] *::before,
 html[data-animacoes='off'] *::after {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
+}
+
+html[data-tema='escuro'] { color-scheme: dark; }
+
+html[data-tema='escuro'] .app {
+    --fundo: #0e1812;
+    --superficie: #16231b;
+    --borda: #263a2d;
+    --texto: #e7f1ea;
+    --texto-suave: #a3b8aa;
+    --verde-100: #1c3b29;
 }
