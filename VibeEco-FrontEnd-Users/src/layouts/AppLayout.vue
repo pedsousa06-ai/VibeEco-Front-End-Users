@@ -98,10 +98,7 @@ function deslogar() {
         <h1 class="topo-titulo">{{ titulo }}</h1>
 
         <div class="topo-acoes">
-          <label class="busca">
-            <Icone nome="busca" :tamanho="18" />
-            <input v-model="busca" type="search" placeholder="Buscar..." aria-label="Buscar" />
-          </label>
+          
 
           <span class="chip chip-xp">
             <Icone nome="estrela" :tamanho="15" preenchido />

@@ -9,7 +9,7 @@ export const conteudos = [
       categoria: 'Reciclagem',
       minutos: 8,
       xp: 50,
-      imagem: '/conteudos/reciclagem-domestica.jpg',
+      imagem: '/reciclagem.png',
       revisao: {
         resumo:
           'Reciclar em casa começa na separação correta. Com poucos hábitos, você evita que materiais aproveitáveis acabem no aterro.',
@@ -47,7 +47,7 @@ export const conteudos = [
       categoria: 'Energia',
       minutos: 12,
       xp: 75,
-      imagem: '/conteudos/energia-solar.jpg',
+      imagem: '/energia-solar.png',
       revisao: {
         resumo:
           'A energia solar fotovoltaica transforma a luz do sol em eletricidade, sem emitir gases de efeito estufa durante a geração.',
@@ -85,7 +85,7 @@ export const conteudos = [
       categoria: 'Alimentação',
       minutos: 6,
       xp: 50,
-      imagem: '/conteudos/alimentacao-sustentavel.jpg',
+      imagem: '/alimentacao.png',
       revisao: {
         resumo:
           'O que colocamos no prato tem impacto ambiental. Pequenas escolhas na compra e no preparo já reduzem o desperdício e as emissões.',
@@ -123,7 +123,7 @@ export const conteudos = [
       categoria: 'Água',
       minutos: 9,
       xp: 60,
-      imagem: '/conteudos/consumo-consciente-agua.jpg',
+      imagem: '/agua.png',
       revisao: {
         resumo:
           'A água potável é um recurso limitado. Pequenas mudanças de hábito dentro de casa fazem uma grande diferença no consumo.',
@@ -161,7 +161,7 @@ export const conteudos = [
       categoria: 'Reciclagem',
       minutos: 15,
       xp: 90,
-      imagem: '/conteudos/compostagem-em-casa.jpg',
+      imagem: 'compostagem.png',
       revisao: {
         resumo:
           'A compostagem transforma restos orgânicos em adubo rico em nutrientes, reduzindo o lixo que vai para o aterro.',
@@ -199,7 +199,7 @@ export const conteudos = [
       categoria: 'Mobilidade',
       minutos: 10,
       xp: 65,
-      imagem: '/conteudos/mobilidade-urbana-sustentavel.jpg',
+      imagem: 'mobilidade.png',
       revisao: {
         resumo:
           'Como nos deslocamos pela cidade influencia a poluição, o trânsito e a qualidade de vida de todos.',
@@ -237,7 +237,7 @@ export const conteudos = [
       categoria: 'Biodiversidade',
       minutos: 18,
       xp: 100,
-      imagem: '/conteudos/biodiversidade-ecossistemas.jpg',
+      imagem: '/biodiversidade.png',
       revisao: {
         resumo:
           'Biodiversidade é a variedade de vida na Terra: espécies, genes e ecossistemas. Ela sustenta alimentos, água limpa e clima estável.',
@@ -275,7 +275,7 @@ export const conteudos = [
       categoria: 'Energia',
       minutos: 7,
       xp: 55,
-      imagem: '/conteudos/eficiencia-energetica-em-casa.jpg',
+      imagem: '/energia-eolica.png',
       revisao: {
         resumo:
           'Usar energia de forma eficiente é fazer o mesmo com menos consumo. Isso reduz a conta de luz e o impacto ambiental.',
@@ -313,7 +313,7 @@ export const conteudos = [
       categoria: 'Biodiversidade',
       minutos: 11,
       xp: 70,
-      imagem: '/conteudos/plantas-nativas-reflorestamento.jpg',
+      imagem: '/floresta.png',
       revisao: {
         resumo:
           'Plantas nativas são as que surgem naturalmente em uma região. Elas são a base do reflorestamento porque já estão adaptadas ao local.',

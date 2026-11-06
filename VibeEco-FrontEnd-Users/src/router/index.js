@@ -12,17 +12,18 @@ import Inicio from '@/views/InicioView.vue'
 import EmBreve from '@/views/EmBreveView.vue'
 import Missoes from '@/views/MissoesView.vue'
 import MissaoDetalhe from '@/views/MissaoDetalheView.vue'
+import Conteudos from '@/views/ConteudosView.vue'
+import ConteudosDetalhe from '@/views/ConteudosDetalhesView.vue'
+import Feed from '@/views/FeedView.vue'
+import Ranking from '@/views/RankingView.vue'
+import Recompensas from '@/views/RecompensasView.vue'
+import Notificacoes from '@/views/NotificacoesView.vue'
+import Historico from '@/views/HistoricoView.vue'
 
 // Telas do menu que ainda não foram feitas: usam a tela "Em breve".
 // Quando uma ficar pronta, troque o component dela e remova-a desta lista.
 const telasEmBreve = [
-  ['conteudos', 'Conteúdos'],
-  ['feed', 'Feed da Comunidade'],
-  ['ranking', 'Ranking'],
   ['desafios', 'Desafios'],
-  ['recompensas', 'Recompensas'],
-  ['notificacoes', 'Notificações'],
-  ['historico', 'Histórico'],
   ['configuracoes', 'Configurações'],
 ].map(([path, titulo]) => ({ path, name: path, component: EmBreve, meta: { titulo } }))
 
@@ -61,6 +62,18 @@ const router = createRouter({
         { path: 'inicio', name: 'inicio', component: Inicio, meta: { titulo: 'Início' } },
         { path: 'missoes', name: 'missoes', component: Missoes, meta: { titulo: 'Missões' } },
         { path: 'missoes/:id', name: 'missao-detalhe', component: MissaoDetalhe, meta: { titulo: 'Missões' } },
+        { path: 'conteudos', name: 'conteudos', component: Conteudos, meta: { titulo: 'Biblioteca de conteúdos' } },
+        {
+          path: 'conteudos/:id',
+          name: 'conteudo-detalhe',
+          component: ConteudosDetalhe,
+          meta: { titulo: 'Biblioteca de conteúdos' },
+        },
+        { path: 'feed', name: 'feed', component: Feed, meta: { titulo: 'Feed da Comunidade' } },
+        { path: 'ranking', name: 'ranking', component: Ranking, meta: { titulo: 'Ranking' } },
+        { path: 'recompensas', name: 'recompensas', component: Recompensas, meta: { titulo: 'Recompensas' } },
+        { path: 'notificacoes', name: 'notificacoes', component: Notificacoes, meta: { titulo: 'Notificações' } },
+        { path: 'historico', name: 'historico', component: Historico, meta: { titulo: 'Histórico' } },
         ...telasEmBreve,
       ],
     },

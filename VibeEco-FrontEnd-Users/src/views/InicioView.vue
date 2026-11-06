@@ -1,8 +1,9 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Icone from '@/components/Icone.vue'
 import { usuario } from '@/services/usuario'
 import { missoesLista, progressoDe, rotuloPrazo, statusDe, xpTotal } from '@/services/missoes'
+import { listarConteudos } from '@/services/conteudos'
 
 // TODO: trocar os dados mockados abaixo por chamadas à API
 const porcentagemNivel = computed(() =>
@@ -20,17 +21,40 @@ const saudacao = computed(() => {
 // As barras começam vazias e enchem logo após a tela abrir
 const montado = ref(false)
 let timer
-onMounted(() => {
-  timer = setTimeout(() => (montado.value = true), 80)
-})
-onBeforeUnmount(() => clearTimeout(timer))
 
 const resumo = [
-  { valor: '5', rotulo: 'Missões em Andamento', icone: 'alvo', cor: 'verde' },
-  { valor: '23', rotulo: 'Missões Concluídas', icone: 'medalha', cor: 'amarelo' },
-  { valor: '2', rotulo: 'Desafios Ativos', icone: 'raio', cor: 'roxo' },
-  { valor: '#14', rotulo: 'Posição no Ranking', detalhe: 'Top 5% na instituição', icone: 'trofeu', cor: 'laranja' },
+  { numero: 5, rotulo: 'Missões em Andamento', icone: 'alvo', cor: 'verde' },
+  { numero: 23, rotulo: 'Missões Concluídas', icone: 'medalha', cor: 'amarelo' },
+  { numero: 2, rotulo: 'Desafios Ativos', icone: 'raio', cor: 'roxo' },
+  { numero: 14, prefixo: '#', rotulo: 'Posição no Ranking', detalhe: 'Top 5% na instituição', icone: 'trofeu', cor: 'laranja' },
 ]
+
+// ---------- CONTADORES ANIMADOS ----------
+const reduzMovimento =
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+const xpExibido = ref(0)
+const resumoExibido = ref(resumo.map(() => 0))
+let cancelado = false
+
+function contar(destino, aplicar, duracao = 1200) {
+  if (reduzMovimento) return aplicar(destino)
+  const inicio = performance.now()
+  const passo = (agora) => {
+    if (cancelado) return
+    const t = Math.min((agora - inicio) / duracao, 1)
+    const suave = 1 - Math.pow(1 - t, 3) // ease-out
+    aplicar(Math.round(destino * suave))
+    if (t < 1) requestAnimationFrame(passo)
+  }
+  requestAnimationFrame(passo)
+}
+
+// Se o XP chegar depois (vindo da API), anima de novo
+watch(
+  () => usuario.xp,
+  (novo) => contar(novo, (v) => (xpExibido.value = v), 1400)
+)
 
 // Missões em andamento vêm do mesmo serviço da tela de Missões
 const missoes = computed(() =>
@@ -48,11 +72,37 @@ const missoes = computed(() =>
     }))
 )
 
-const conteudos = [
-  { id: 1, categoria: 'Reciclagem', titulo: 'Guia de Reciclagem Doméstica', leitura: '8 min leitura', xp: 50, concluido: true },
-  { id: 2, categoria: 'Energia', titulo: 'Energia Solar: Como Funciona', leitura: '12 min leitura', xp: 75, concluido: false },
-  { id: 3, categoria: 'Alimentação', titulo: 'Alimentação Sustentável', leitura: '6 min leitura', xp: 50, concluido: false },
-]
+const todosConteudos = ref([])
+
+onMounted(async () => {
+  timer = setTimeout(() => (montado.value = true), 80)
+
+  contar(usuario.xp, (v) => (xpExibido.value = v), 1400)
+  resumo.forEach((item, i) =>
+    contar(item.numero, (v) => (resumoExibido.value[i] = v), 900 + i * 150)
+  )
+
+  todosConteudos.value = await listarConteudos()
+})
+
+onBeforeUnmount(() => {
+  clearTimeout(timer)
+  cancelado = true
+})
+
+const conteudos = computed(() =>
+  [...todosConteudos.value]
+    .sort((a, b) => Number(a.concluido) - Number(b.concluido))
+    .slice(0, 3)
+    .map((c) => ({
+      id: c.id,
+      categoria: c.categoria,
+      titulo: c.titulo,
+      leitura: `${c.minutos} min leitura`,
+      xp: c.xp,
+      concluido: c.concluido,
+    }))
+)
 
 const diasSemana = [
   { letra: 'S', nome: 'Segunda' },
@@ -68,7 +118,7 @@ const diasCumpridos = computed(() => Math.min(usuario.ofensiva, 7))
 
 const desafios = [
   { id: 1, titulo: 'Semana sem Carro', participantes: 230, encerra: '5 dias', xp: 500 },
-  { id: 2, titulo: 'Desafio da Água', participantes: 412, encerra: '1 dia', xp: 300 },
+  { id: 2, titulo: 'Desafio da Água', participantes: 412, encerra: '1 dia', xp: 300, urgente: true },
 ]
 
 const conquistas = [
@@ -87,7 +137,7 @@ function classeDificuldade(texto) {
 <template>
   <div class="inicio">
     <!-- BANNER DE BOAS-VINDAS -->
-    <section class="banner" aria-label="Boas-vindas">
+    <section class="banner entrada" aria-label="Boas-vindas">
       <div class="banner-texto">
         <small>{{ saudacao }}</small>
         <h2>{{ usuario.nome }}!</h2>
@@ -96,7 +146,7 @@ function classeDificuldade(texto) {
         </p>
 
         <div class="banner-chips">
-          <span><Icone nome="estrela" :tamanho="15" preenchido />{{ usuario.xp.toLocaleString('pt-BR') }} XP</span>
+          <span><Icone nome="estrela" :tamanho="15" preenchido />{{ xpExibido.toLocaleString('pt-BR') }} XP</span>
           <span><Icone nome="moeda" :tamanho="16" />{{ usuario.mc }} MC</span>
           <span><Icone nome="chama" :tamanho="15" />{{ usuario.ofensiva }} dias</span>
         </div>
@@ -124,13 +174,18 @@ function classeDificuldade(texto) {
 
     <!-- CARDS DE RESUMO -->
     <section class="resumo" aria-label="Resumo">
-      <article v-for="item in resumo" :key="item.rotulo" class="card resumo-card">
+      <article
+        v-for="(item, i) in resumo"
+        :key="item.rotulo"
+        class="card resumo-card entrada"
+        :style="{ '--i': i + 1 }"
+      >
         <div class="resumo-icone" :class="'cor-' + item.cor">
           <Icone :nome="item.icone" :tamanho="22" />
         </div>
 
         <div class="resumo-texto">
-          <strong>{{ item.valor }}</strong>
+          <strong>{{ item.prefixo }}{{ resumoExibido[i] }}</strong>
           <span>{{ item.rotulo }}</span>
           <small v-if="item.detalhe">{{ item.detalhe }}</small>
         </div>
@@ -146,7 +201,13 @@ function classeDificuldade(texto) {
             <RouterLink to="/missoes" class="ver-todas">Ver todas <Icone nome="seta" :tamanho="14" /></RouterLink>
           </div>
 
-          <RouterLink v-for="missao in missoes" :key="missao.id" :to="`/missoes/${missao.id}`" class="card missao">
+          <RouterLink
+            v-for="(missao, i) in missoes"
+            :key="missao.id"
+            :to="`/missoes/${missao.id}`"
+            class="card missao entrada"
+            :style="{ '--i': i + 3 }"
+          >
             <div class="missao-cima">
               <div>
                 <div class="missao-tags">
@@ -188,7 +249,13 @@ function classeDificuldade(texto) {
           </div>
 
           <div class="conteudos">
-            <article v-for="conteudo in conteudos" :key="conteudo.id" class="card conteudo">
+            <RouterLink
+              v-for="(conteudo, i) in conteudos"
+              :key="conteudo.id"
+              :to="`/conteudos/${conteudo.id}`"
+              class="card conteudo entrada"
+              :style="{ '--i': i + 6 }"
+            >
               <div class="conteudo-topo">
                 <span class="tag">{{ conteudo.categoria }}</span>
                 <span v-if="conteudo.concluido" class="concluido">
@@ -202,14 +269,14 @@ function classeDificuldade(texto) {
                 <small>{{ conteudo.leitura }}</small>
                 <span class="xp"><Icone nome="estrela" :tamanho="13" preenchido />{{ conteudo.xp }} XP</span>
               </div>
-            </article>
+            </RouterLink>
           </div>
         </section>
       </div>
 
       <!-- COLUNA DA DIREITA -->
       <div class="coluna">
-        <article class="card lateral">
+        <article class="card lateral entrada" :style="{ '--i': 4 }">
           <h3 class="lateral-titulo"><Icone nome="chama" :tamanho="18" class="icone-laranja" />Ofensiva Diária</h3>
 
           <div class="ofensiva">
@@ -222,7 +289,8 @@ function classeDificuldade(texto) {
               v-for="(dia, i) in diasSemana"
               :key="i"
               class="dia"
-              :class="{ 'dia-ativo': i < diasCumpridos }"
+              :class="{ 'dia-ativo': i < diasCumpridos, 'dia-hoje': i === diasCumpridos - 1 }"
+              :style="{ '--i': i }"
               role="listitem"
               :aria-label="`${dia.nome}: ${i < diasCumpridos ? 'cumprido' : 'pendente'}`"
             >
@@ -231,7 +299,7 @@ function classeDificuldade(texto) {
           </div>
         </article>
 
-        <article class="card lateral">
+        <article class="card lateral entrada" :style="{ '--i': 5 }">
           <div class="cabecalho-secao cabecalho-card">
             <h3 class="lateral-titulo"><Icone nome="raio" :tamanho="18" class="icone-roxo" />Desafios em Destaque</h3>
             <RouterLink to="/desafios" class="seta-link" aria-label="Ver todos os desafios">
@@ -243,17 +311,22 @@ function classeDificuldade(texto) {
             <div>
               <strong>{{ desafio.titulo }}</strong>
               <small>{{ desafio.participantes }} participantes</small>
-              <small>Encerra em {{ desafio.encerra }}</small>
+              <small :class="{ urgente: desafio.urgente }">Encerra em {{ desafio.encerra }}</small>
             </div>
             <span class="xp"><Icone nome="estrela" :tamanho="13" preenchido />{{ desafio.xp }} XP</span>
           </div>
         </article>
 
-        <article class="card lateral">
+        <article class="card lateral entrada" :style="{ '--i': 6 }">
           <h3 class="lateral-titulo"><Icone nome="medalha" :tamanho="18" class="icone-amarelo" />Conquistas Recentes</h3>
 
           <div class="conquistas">
-            <div v-for="conquista in conquistas" :key="conquista.id" class="conquista">
+            <div
+              v-for="(conquista, i) in conquistas"
+              :key="conquista.id"
+              class="conquista"
+              :style="{ '--i': i }"
+            >
               <span class="conquista-icone" :class="'cor-' + conquista.cor" aria-hidden="true">{{ conquista.icone }}</span>
               <span>{{ conquista.nome }}</span>
             </div>
@@ -305,6 +378,8 @@ function classeDificuldade(texto) {
   overflow: hidden;
 }
 .barra-preenchimento {
+  position: relative;
+  overflow: hidden;
   height: 100%;
   border-radius: 99px;
   background: linear-gradient(90deg, #16a34a, #4ade80);
@@ -475,6 +550,7 @@ function classeDificuldade(texto) {
   font-size: 28px;
   font-weight: 800;
   line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 .resumo-texto span {
   display: block;
@@ -612,6 +688,8 @@ function classeDificuldade(texto) {
   gap: 12px;
   padding: 16px;
   transition: transform 0.15s, box-shadow 0.15s;
+  text-decoration: none;
+  color: inherit;
 }
 .conteudo:hover {
   transform: translateY(-2px);
@@ -798,13 +876,162 @@ function classeDificuldade(texto) {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- ANIMAÇÕES ---------- */
+
+/* Entrada escalonada (backwards: depois de terminar, o hover volta a funcionar) */
+.entrada {
+  animation: entrar 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+@keyframes entrar {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Brilho correndo nas barras de progresso */
+.barra-preenchimento::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: brilho 2.8s ease-in-out 1.2s infinite;
+}
+@keyframes brilho {
+  to { transform: translateX(100%); }
+}
+
+/* Banner: círculos flutuando e avatar com anel pulsante */
+.banner::before { animation: flutuar 9s ease-in-out infinite; }
+.banner::after  { animation: flutuar 11s ease-in-out infinite reverse; }
+@keyframes flutuar {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(-14px, 10px); }
+}
+.banner-avatar {
+  animation: anel 2.6s ease-out infinite;
+}
+@keyframes anel {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.35), 0 0 0 6px rgba(255, 255, 255, 0.08); }
+  70%  { box-shadow: 0 0 0 16px rgba(255, 255, 255, 0), 0 0 0 6px rgba(255, 255, 255, 0.08); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0), 0 0 0 6px rgba(255, 255, 255, 0.08); }
+}
+
+/* Chips do banner: leve elevação no hover */
+.banner-chips span {
+  transition: transform 0.2s, background 0.2s;
+}
+.banner-chips span:hover {
+  transform: translateY(-2px) scale(1.04);
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* Cards de resumo: ícone dá uma "sacudida" no hover */
+.resumo-card:hover .resumo-icone {
+  animation: balancar 0.5s ease;
+}
+@keyframes balancar {
+  0%, 100% { transform: rotate(0); }
+  25%      { transform: rotate(-12deg) scale(1.1); }
+  75%      { transform: rotate(10deg) scale(1.1); }
+}
+
+/* Ofensiva: chama viva + dias acendendo em sequência */
+.icone-laranja {
+  transform-origin: 50% 90%;
+  animation: chama 1.6s ease-in-out infinite;
+}
+@keyframes chama {
+  0%, 100% { transform: scale(1) rotate(-3deg); }
+  50%      { transform: scale(1.15) rotate(3deg); }
+}
+.ofensiva strong {
+  animation: entrar 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s backwards;
+}
+.dia-ativo {
+  animation: pop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1) backwards;
+  animation-delay: calc(0.6s + var(--i) * 110ms);
+}
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.3); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.dia-hoje {
+  position: relative;
+}
+.dia-hoje::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid #f97316;
+  animation: pulso 1.8s ease-out infinite;
+}
+@keyframes pulso {
+  0%   { transform: scale(0.9); opacity: 0.9; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* Desafios: urgência */
+.urgente {
+  color: #dc2626 !important;
+  font-weight: 700;
+}
+.urgente::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #dc2626;
+  animation: piscar 1.2s ease-in-out infinite;
+}
+@keyframes piscar {
+  50% { opacity: 0.25; transform: scale(0.7); }
+}
+.desafio {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.desafio:hover {
+  transform: translateX(4px);
+  box-shadow: inset 3px 0 0 #7c3aed;
+}
+
+/* Conquistas: pop-in + ícone balança no hover */
+.conquista {
+  animation: pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) backwards;
+  animation-delay: calc(0.5s + var(--i) * 100ms);
+}
+.conquista:hover .conquista-icone {
+  animation: balancar 0.5s ease;
+}
+
+/* Seta do "ver todas" anda no hover */
+.ver-todas svg {
+  transition: transform 0.2s;
+}
+.ver-todas:hover svg {
+  transform: translateX(4px);
+}
+
+/* Ícone de XP brilha de leve */
+.xp svg {
+  animation: cintilar 3s ease-in-out infinite;
+}
+@keyframes cintilar {
+  0%, 85%, 100% { transform: scale(1) rotate(0); filter: none; }
+  92%           { transform: scale(1.3) rotate(15deg); filter: drop-shadow(0 0 4px #f5b301); }
+}
+
+/* Desliga tudo para quem prefere menos movimento */
 @media (prefers-reduced-motion: reduce) {
-  .barra-preenchimento,
-  .resumo-card,
-  .missao,
-  .conteudo,
-  .conquista {
-    transition: none;
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }
 </style>
