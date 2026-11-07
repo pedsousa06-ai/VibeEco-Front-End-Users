@@ -9,7 +9,6 @@ import NovaSenha from '@/views/NovaSenhaView.vue'
 import PrimeiroAcesso from '@/views/PrimeiroAcessoView.vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import Inicio from '@/views/InicioView.vue'
-import EmBreve from '@/views/EmBreveView.vue'
 import Missoes from '@/views/MissoesView.vue'
 import MissaoDetalhe from '@/views/MissaoDetalheView.vue'
 import Conteudos from '@/views/ConteudosView.vue'
@@ -20,16 +19,11 @@ import Configuracoes from '@/views/ConfiguracoesView.vue'
 import Recompensas from '@/views/RecompensasView.vue'
 import Notificacoes from '@/views/NotificacoesView.vue'
 import Historico from '@/views/HistoricoView.vue'
+import Desafios from '@/views/DesafiosView.vue'
+import DesafioDetalhe from '@/views/DesafioDetalheView.vue'
 
 // Telas do menu que ainda não foram feitas: usam a tela "Em breve".
 // Quando uma ficar pronta, troque o component dela e remova-a desta lista.
-const telasEmBreve = [
-  ['desafios', 'Desafios'],
-  ['recompensas', 'Recompensas'],
-  ['notificacoes', 'Notificações'],
-  ['historico', 'Histórico'],
-  ['configuracoes', 'Configurações'],
-].map(([path, titulo]) => ({ path, name: path, component: EmBreve, meta: { titulo } }))
 
 /*
   Fluxo de acesso:
@@ -79,7 +73,8 @@ const router = createRouter({
         { path: 'recompensas', name: 'recompensas', component: Recompensas, meta: { titulo: 'Recompensas' } },
         { path: 'notificacoes', name: 'notificacoes', component: Notificacoes, meta: { titulo: 'Notificações' } },
         { path: 'historico', name: 'historico', component: Historico, meta: { titulo: 'Histórico' } },
-        ...telasEmBreve,
+        { path: 'desafios', name: 'desafios', component: Desafios, meta: { titulo: 'Desafios' } },
+        { path: 'desafios/:id', name: 'desafio-detalhe', component: DesafioDetalhe, meta: { titulo: 'Desafios' } },
       ],
     },
 
