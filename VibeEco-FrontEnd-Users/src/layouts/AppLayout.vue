@@ -69,13 +69,13 @@ function deslogar() {
       </nav>
 
       <div class="lateral-rodape">
-        <div class="perfil">
+        <RouterLink to="/perfil" class="perfil">
           <span class="avatar avatar-grande" aria-hidden="true">{{ usuario.iniciais }}</span>
           <div>
             <strong>{{ usuario.nome }}</strong>
             <small>{{ usuario.nivel }}</small>
           </div>
-        </div>
+        </RouterLink>
 
         <RouterLink to="/configuracoes" class="menu-item" :class="{ ativo: estaAtivo('/configuracoes') }">
           <Icone nome="engrenagem" :tamanho="20" />
@@ -275,6 +275,8 @@ function deslogar() {
   align-items: center;
   gap: 12px;
   padding: 8px 14px 12px;
+  color: inherit;
+  text-decoration: none;
 }
 .perfil strong {
   display: block;
