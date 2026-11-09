@@ -15,4 +15,11 @@ export const usuario = reactive({
   mc: 480,
   ofensiva: 9,
   notificacoes: 10,
+  matricula: '2021012345',
+  nomePublico: 'ana.silva',
+  curso: 'Engenharia Ambiental',
+  instituicao: 'Universidade Federal de Minas Gerais',
+  localizacao: 'Belo Horizonte, MG',
+  desde: 'março de 2024',
+  bio: 'Estudante, voluntária e apaixonada por transformar pequenos hábitos em impacto coletivo.',
 })
