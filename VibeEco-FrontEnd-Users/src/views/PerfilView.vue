@@ -3,6 +3,13 @@ import { computed, reactive, ref } from 'vue';
 import { usuario } from '@/services/usuario'; 
 import Interruptor from '@/components/Interruptor.vue';
 import { configuracoes } from '@/services/configuracoes';
+import Icone from '@/components/Icone.vue';
+import { PERIODOS, obterDesempenho, obterEvolucaoXp, CONQUISTAS, TOTAL_EMBLEMA } from '@/services/perfil';
+
+const periodo = ref('30')
+const cartoes = computed(() => obterDesempenho(periodo.value))
+const periodoRotulo = computed(() => PERIODOS.find((p) => p.valor === periodo.value)?.rotulo)
+
 
 const campos = ['nome', 'nomePublico', 'email', 'matricula', 'curso', 'localizacao', 'bio', 'foto']
 
@@ -50,6 +57,9 @@ function salvar() {
 function cancelar() {
     Object.assign(form, dadosAtuais()) // volta o rascunho ao que está salvo 
 }
+
+const evolucao = obterEvolucaoXp()
+const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
 
 </script>
 
@@ -162,6 +172,91 @@ function cancelar() {
 
         </section>
     </div>
+
+    <section class="desempenho" aria-labelledby="t-desempenho">
+        <header class="secao-cab">
+            <div>
+                <h2 id="t-desempenho">Desempenho e conquistas</h2>
+                <p>Sua jornada sustentável em números</p>
+            </div>
+
+            <div class="segmentos" role="radiogroup" aria-label="Período">
+                <button
+                v-for="p in PERIODOS"
+                :key="p.valor"
+                type="button"
+                role="radio"
+                class="segmento"
+                :class="{ ativo: periodo === p.valor}"
+                :aria-checked="periodo === p.valor"
+                @click="periodo = p.valor"
+                >
+                {{ p.rotulo }}
+                </button>
+            </div>
+        </header>
+
+        <div class="cartoes">
+            <article v-for="c in cartoes" :key="c.id" class="card cartao">
+                <div class="cartao-topo">
+                    <span class="cartao-icone"><Icone :nome="c.icone" :tamanho="18"/></span>
+                    <span class="cartao-periodo">{{ periodoRotulo }}</span>
+                </div>
+                <strong class="cartao-valor">{{ c.valor }}</strong>
+                <span class="cartao-rotulo">{{ c.rotulo }}</span>
+                <small>{{ c.nota }}</small>
+            </article>
+        </div>
+
+        <div class="analise">
+            <article class="card grafico">
+                <header class="grafico-cab">
+                    <div>
+                        <h3>Evolução de XP</h3>
+                        <p>Pontuação conquistada nas últimas 12 semanas</p>
+                    </div>
+                    <span class="variacao">{{ evolucao.variacao }}</span>
+                </header>
+
+                <ol class="barras" aria-label="XP conquistado por semana">
+                    <li
+                    v-for="(s, i) in evolucao.semanas"
+                    :key="s.semana"
+                    class="barra-item"
+                    :aria-label="`Semana ${s.semana}: ${s.xp} XP`"
+                    >
+                        <span
+                        class="barra-xp"
+                        :class="{ atual: i === evolucao.semanas.length - 1 }"
+                        :style="{ height: s.altura + '%' }"
+                        :title="`${s.xp} XP`"
+                        ></span> 
+                        <small aria-hidden="true">{{ s.semana }}</small>
+                    </li>
+                </ol>
+            </article>
+
+            <article class="card conquistas">
+                <header class="grafico-cab">
+                    <div>
+                        <h3>Conquistas recentes</h3>
+                        <p>{{ desbloqueadas }} de {{ TOTAL_EMBLEMA }} emblemas desbloqueados</p>
+                    </div>
+                </header>
+
+                <ul class="lista-conq">
+                    <li v-for="c in CONQUISTAS" :key="c.id" class="conq" :class="{ bloqueada: !c.desbloqueada}">
+                        <span class="conq-icone"><Icone :nome="c.icone" :tamanho="18"/></span>  
+                        <div>
+                            <strong>{{ c.titulo }}</strong>
+                            <small>{{ c.descricao }}</small>
+                        </div> 
+                        <span v-if="c.desbloqueada" class="conq-ok" role="img" aria-label="Desbloqueada">✓</span>
+                    </li>
+                </ul>
+            </article>
+        </div>
+    </section>
 </template>
 
 <style scoped>
@@ -412,10 +507,210 @@ function cancelar() {
     font-size: 12.5px;
 }
 
+.desempenho { margin-top: 32px; }
+
+.secao-cab {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.secao-cab h2 { margin: 0; font-size: 20px; }
+.secao-cab p { margin: 4px 0 0 ; color: var(--texto-suave); font-size: 13px; }
+
+.segmentos {
+    display: flex;
+    gap: 4px;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    background: var(--fundo);
+    padding: 4PX;
+}
+.segmento {
+    padding: 6px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--texto-suave);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.segmento.ativo {
+    background: var(--superficie);
+    color: var(--texto);
+    font-weight: 700;
+}
+.segmento:focus-visible {
+    outline: 3px solid #1fe05a;
+    outline-offset: 2px;
+}
+
+.cartoes {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.cartao {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 16px 20px;
+}
+
+.cartao-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.cartao-icone {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--verde-100);
+    color: var(--verde-700);
+}
+
+.cartao-periodo {
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--verde-100);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.cartao-valor { font-size: 28px; font-weight: 800;}
+.cartao-rotulo { font-size: 13px; font-weight: 600;}
+.cartao small { color: var(--texto-suave); font-size: 12px; }
+
+.analise {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+    align-items: start;
+}
+.grafico,
+.conquistas { padding: 20px; }
+
+.grafico-cab {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.grafico-cab h3 { margin: 0; font-size: 15px; }
+.grafico-cab p { margin: 2px 0 0; font-size: 12px; color: var(--texto-suave); }
+
+.variacao {
+    padding: 4px 10px;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    background: var(--verde-100);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.barras {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 170px;
+    margin: 0 0 30px;
+    padding: 0;
+    list-style: none;
+}
+.barra-item {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+}
+.barra-xp {
+    width: 100%;
+    border-radius: 6px 6px 0 0;
+    background: var(--verde-100);
+}
+.barra-xp.atual { background: var(--verde-700); }
+.barra-item small {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 6px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--texto-suave);
+}
+
+.lista-conq {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.conq {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--borda);
+    border-radius: 12px;
+}
+.conq.bloqueada { opacity: 0.7; }
+.conq-icone {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--verde-100);
+    color: var(--verde-700);
+}
+.conq div { flex: 1; min-width: 0; }
+.conq strong { display: block; font-size: 13px; }
+.conq small { display: block; font-size: 11.5px; color: var(--texto-suave); }
+.conq-ok {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid var(--verde-700);
+    border-radius: 50%;
+    color: var(--verde-700);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+@media (max-width: 1100px) {
+    .cartoes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+    .cartoes { grid-template-columns: minmax(0, 1fr); }
+    .lista-conq { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 900px) {
     .duas-colunas,
     .form {
         grid-template-columns: minmax(0, 1fr);
     }
+     .analise { grid-template-columns: minmax(0, 1fr); }
+
 }
 </style>
