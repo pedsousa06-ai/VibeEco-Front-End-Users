@@ -5,6 +5,28 @@ import Interruptor from '@/components/Interruptor.vue';
 import { configuracoes } from '@/services/configuracoes';
 import Icone from '@/components/Icone.vue';
 import { PERIODOS, obterDesempenho, obterEvolucaoXp, CONQUISTAS, TOTAL_EMBLEMA } from '@/services/perfil';
+import { missoesLista, statusDe, progressoDe, xpTotal, rotuloPrazo } from '@/services/missoes';
+
+const ABAS =[
+    { valor: 'todas', rotulo: 'Todas' },
+    { valor: 'disponivel', rotulo: 'Disponíveis' },
+    { valor: 'andamento', rotulo: 'Em andamento' },
+    { valor: 'concluida', rotulo: 'Concluídas' },
+]
+
+const aba = ref('todas')
+
+function contar(valor) {
+    if(valor === 'todas') return missoesLista.length
+    return missoesLista.filter((m) => statusDe(m) === valor).length
+}
+
+const missoesFiltradas = computed (() =>
+    aba.value === 'todas' ? missoesLista : missoesLista.filter((m) => statusDe(m) === aba.value),
+)
+
+const ROTULO_BOTAO = { andamento: 'Continuar', disponivel: 'Começar', concluida: 'Ver detalhes' }
+const CLASSE_DIF = { 'Fácil': 'facil', 'Médio': 'medio', 'Difícil': 'dificil'}
 
 const periodo = ref('30')
 const cartoes = computed(() => obterDesempenho(periodo.value))
