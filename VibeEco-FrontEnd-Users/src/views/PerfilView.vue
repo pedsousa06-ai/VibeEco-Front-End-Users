@@ -279,6 +279,66 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
             </article>
         </div>
     </section>
+
+    <section class="card missoes-sec" aria-labelledby="t-missoes">
+        <h2 id="t-missoes">Missões que impulsionam o seu progresso</h2>
+        <p>Continue suas missões ativas para avançar de nível e desbloquear novas conquistas</p>
+
+        <div class="abas">
+            <div class="segmentos" role="radiogroup" aria-labelledby="Filtrar missões"> 
+                <button
+                v-for="a in ABAS"
+                :key="a.valor"
+                type="button"
+                role="radio"
+                class="segmento"
+                :class="{ ativo: aba === a.valor }"
+                :aria-checked="aba === a.valor"
+                @click="aba = a.valor"
+                >
+                {{ a.rotulo }} <span class="contagem">{{ contar(a.valor) }}</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="missoes-grade">
+            <article v-for="m in missoesFiltradas" :key="m.id" class="card missao">
+                <div class="missao-tags">
+                    <span class="tag-cat">{{ m.categoria }}</span>
+                    <span class="tag-dif" :class="'dif-' + CLASSE_DIF[m.dificuldade]">{{ m.dificuldade }}</span>
+                </div>
+
+                <h3>{{ m.titulo }}</h3>
+                <p class="missao-resumo">{{ m.resumo }}</p>
+
+                <div class="prog-linha">
+                    <span>Progresso</span>
+                    <span>{{ progressoDe(m) }}</span>
+                </div>
+                <div
+                class="prog-trilho"
+                role="progressbar"
+                :aria-valuenow="progressoDe(m)"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                :aria-label="`Progresso de ${m.titulo}`"
+                >
+                    <span class="prog-preench" :style="{ width: progressoDe(m)}"></span>
+                </div>
+
+                <div class="missao-meta">
+                    <span>★ {{ xpTotal(m) }} XP</span>
+                    <span>{{ m.mc }} MC</span>
+                    <span v-if="m.prazo">{{ rotuloPrazo(m.prazo) }}</span>
+                </div>
+
+                <RouterLink :to="`/missoes/${m.id}`" class="botao-pri botao-cheio">
+                    {{ ROTULO_BOTAO[statusDe(m)] }}
+                </RouterLink>
+            </article>
+        </div>
+        <p v-if="!missoesFiltradas.length" class="vazio">Nenhuma missão nesta aba.</p>
+    </section>
 </template>
 
 <style scoped>
@@ -719,6 +779,84 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
     font-weight: 700;
 }
 
+.missoes-sec { margin-top: 32px; padding: 24px; }
+.missoes-sec h2 { margin: 0; font-size: 20px; }
+.missoes-sub { margin: 4px 0 0; color: var(--texto-suave); font-size: 13px; }
+
+.abas { display: flex; justify-content: center; margin: 20px 0; }
+
+.contagem {
+    margin-left: 4px;
+    padding: 1px 6px;
+    border-radius: 99px;
+    background: var(--verde-100);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.missoes-grade {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.missao{ display: flex; flex-direction: column; gap: 8px; padding: 18px; }
+.missao h3 { margin: 4px 0 0; font-size: 17px; }
+.missao-resumo { margin: 0; min-height: 36px; color: var(--texto-suave); font-size: 12.5px; }
+
+.missao-tags { display: flex; gap: 6px; }
+
+.tag-cat,
+.tag-dif {
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.tag-cat { background: var(--verde-100); color: var(--verde-700); }
+
+.dif-facil { background: var(--verde-100); color: var(--verde-700); }
+.dif-medio { background: rgba(235, 180, 62, 0.205); }
+.dif-dificil { background: rgba(238, 51, 51, 0.12); }
+
+.prog-linha {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--texto-suave);
+}
+
+.prog-trilho {
+    height: 8px;
+    border-radius: 99px;
+    background: var(--verde-100);
+    overflow: hidden;
+}
+
+.prog-preench {
+    display: block;
+    height: 100%;
+    border-radius: 99px;
+    background: var(--verde-600);
+}
+
+.missao-meta {
+    display: flex;
+    justify-content: space-between;
+    margin: 6px 0;
+    font-size: 12.5;
+    font-weight: 600;
+}
+
+.botao-cheio {
+    display: grid;
+    place-items: center;
+    margin-top: auto;
+    text-decoration: none;
+}
+.vazio { margin: 24px 0 0; text-align: center; color: var(--texto-suave); }
 
 @media (max-width: 1100px) {
     .cartoes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
