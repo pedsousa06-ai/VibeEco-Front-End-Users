@@ -268,7 +268,7 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
 
                 <ul class="lista-conq">
                     <li v-for="c in CONQUISTAS" :key="c.id" class="conq" :class="{ bloqueada: !c.desbloqueada}">
-                        <span class="conq-icone"><Icone :nome="c.icone" :tamanho="18"/></span>  
+                        <span class="conq-icone" :class="'tom-' + c.tom"><Icone :nome="c.icone" :tamanho="18"/></span>  
                         <div>
                             <strong>{{ c.titulo }}</strong>
                             <small>{{ c.descricao }}</small>
@@ -282,10 +282,10 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
 
     <section class="card missoes-sec" aria-labelledby="t-missoes">
         <h2 id="t-missoes">Missões que impulsionam o seu progresso</h2>
-        <p>Continue suas missões ativas para avançar de nível e desbloquear novas conquistas</p>
+        <p class="missoes-sub">Continue suas missões ativas para avançar de nível e desbloquear novas conquistas</p>
 
         <div class="abas">
-            <div class="segmentos" role="radiogroup" aria-labelledby="Filtrar missões"> 
+            <div class="segmentos" role="radiogroup" aria-label="Filtrar missões"> 
                 <button
                 v-for="a in ABAS"
                 :key="a.valor"
@@ -313,7 +313,7 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
 
                 <div class="prog-linha">
                     <span>Progresso</span>
-                    <span>{{ progressoDe(m) }}</span>
+                    <span>{{ progressoDe(m) }}%</span>
                 </div>
                 <div
                 class="prog-trilho"
@@ -323,13 +323,15 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
                 aria-valuemax="100"
                 :aria-label="`Progresso de ${m.titulo}`"
                 >
-                    <span class="prog-preench" :style="{ width: progressoDe(m)}"></span>
+                    <span class="prog-preench" :style="{ width: progressoDe(m) + '%'}"></span>
                 </div>
 
                 <div class="missao-meta">
-                    <span>★ {{ xpTotal(m) }} XP</span>
-                    <span>{{ m.mc }} MC</span>
-                    <span v-if="m.prazo">{{ rotuloPrazo(m.prazo) }}</span>
+                    <div class="missao-ganho">
+                        <span class="meta-xp">★ {{ xpTotal(m) }} XP</span>
+                        <span class="meta-mc">{{ m.mc }} MC</span>
+                    </div>
+                    <span v-if="m.prazo" class="meta-prazo">{{ rotuloPrazo(m.prazo) }}</span>
                 </div>
 
                 <RouterLink :to="`/missoes/${m.id}`" class="botao-pri botao-cheio">
@@ -744,7 +746,13 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
     padding: 0;
     list-style: none;
 }
+
+.conquistas {
+    padding: 20px;
+    background: var(--fundo);
+}
 .conq {
+    background: var(--superficie);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -817,8 +825,8 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
 .tag-cat { background: var(--verde-100); color: var(--verde-700); }
 
 .dif-facil { background: var(--verde-100); color: var(--verde-700); }
-.dif-medio { background: rgba(235, 180, 62, 0.205); }
-.dif-dificil { background: rgba(238, 51, 51, 0.12); }
+.dif-medio { background: rgba(235, 180, 62, 0.205); color: #b45309; }
+.dif-dificil { background: rgba(238, 51, 51, 0.12); color: #dc2626; }
 
 .prog-linha {
     display: flex;
@@ -846,7 +854,7 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
     display: flex;
     justify-content: space-between;
     margin: 6px 0;
-    font-size: 12.5;
+    font-size: 12.5px;
     font-weight: 600;
 }
 
@@ -856,7 +864,17 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
     margin-top: auto;
     text-decoration: none;
 }
+
+.tom-laranja { background: rgba(232, 89, 12, 0.14); color: #e8590c; }
+.tom-verde { background: var(--verde-100); color: var(--verde-700); }
+.tom-azul { background: rgba(59, 111, 224, 0.14); color: #3b6fe0; }
+.tom-cinza { background: var(--fundo); color: var(--texto-suave); }
 .vazio { margin: 24px 0 0; text-align: center; color: var(--texto-suave); }
+
+.missao-ganhos { display: flex; gap: 14px; }
+.meta-xp { color: #EAB308; }
+.meta-mc { color: var(--verde-700); }
+.meta-prazo { color: var(--texto-suave); font-weight: 500; }
 
 @media (max-width: 1100px) {
     .cartoes { grid-template-columns: repeat(2, minmax(0, 1fr)); }

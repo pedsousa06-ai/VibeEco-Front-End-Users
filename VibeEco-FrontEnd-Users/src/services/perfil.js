@@ -43,8 +43,8 @@ export function obterEvolucaoXp() {
 export const TOTAL_EMBLEMA = 12
 
 export const CONQUISTAS = [
-    { id: 'sequencia', titulo: 'Sequência verde', descricao: '30 dias ativos', icone: 'raio', desbloqueada: true },
-    { id: 'reciclador', titulo: 'Reciclador mestre', descricao: '25 ações registradas', icone: 'historico', desbloqueada: true },
-    { id: 'mobilizador', titulo: 'Mobilizador', descricao: 'Convidou 5 pessoas', icone: 'usuarios', desbloqueada: true },
-    { id: 'floresta', titulo: 'Guardião da floresta', descricao: '78% concluído', icone: 'alvo', desbloqueada: false },
+    { id: 'sequencia', titulo: 'Sequência verde', descricao: '30 dias ativos', icone: 'raio', desbloqueada: true, tom: 'laranja'},
+    { id: 'reciclador', titulo: 'Reciclador mestre', descricao: '25 ações registradas', icone: 'historico', desbloqueada: true, tom: 'verde'},
+    { id: 'mobilizador', titulo: 'Mobilizador', descricao: 'Convidou 5 pessoas', icone: 'usuarios', desbloqueada: true, tom: 'azul'},
+    { id: 'floresta', titulo: 'Guardião da floresta', descricao: '78% concluído', icone: 'alvo', desbloqueada: false, tom: 'cinza' },
 ]
