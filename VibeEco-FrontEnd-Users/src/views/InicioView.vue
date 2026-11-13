@@ -7,9 +7,7 @@ import { listarConteudos } from '@/services/conteudos'
 import { carregarTelaInicial } from '@/services/telaInicio'
 
 // TODO: trocar os dados mockados abaixo por chamadas à API
-const porcentagemNivel = computed(() =>
-  Math.min(100, Math.round((usuario.xp / usuario.xpProximoNivel) * 100))
-)
+const porcentagemNivel = computed(() => Math.min(100, Math.min(100, Math.max(0, perfil.value.progresso))))
 
 // Saudação conforme o horário
 const saudacao = computed(() => {
@@ -23,19 +21,29 @@ const saudacao = computed(() => {
 const montado = ref(false)
 let timer
 
-const resumo = [
-  { numero: 5, rotulo: 'Missões em Andamento', icone: 'alvo', cor: 'verde' },
-  { numero: 23, rotulo: 'Missões Concluídas', icone: 'medalha', cor: 'amarelo' },
-  { numero: 2, rotulo: 'Desafios Ativos', icone: 'raio', cor: 'roxo' },
-  { numero: 14, prefixo: '#', rotulo: 'Posição no Ranking', detalhe: 'Top 5% na instituição', icone: 'trofeu', cor: 'laranja' },
-]
+const resumo = computed(() => {
+  const u = dados.value?.usuario ?? {}
+  return [
+    { numero: u.qtd_missoes_em_andamento ?? 0, rotulo: 'Missões em Andamento', icone: 'alvo', cor: 'verde'},
+    { numero: u.qtd_missoes_concluidas ?? 0, rotulo: 'Missões Concluídas', icone: 'medalha', cor: 'amarelo'},
+    { numero: u.qtd_desafios_ativos ?? 0, rotulo: 'Desafios Ativos', icone: 'raio', cor: 'roxo'},
+    {
+      numero: u.posicao_ranking ?? 0,
+      prefixo: '#',
+      rotulo: 'Posição no Ranking',
+      detalhe: `Top ${Number(u.ranking_top_percentual) || 0}% na instituição`,
+      icone: 'trofeu',
+      cor: 'laranja'
+    }
+  ]
+})
 
 // ---------- CONTADORES ANIMADOS ----------
 const reduzMovimento =
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 const xpExibido = ref(0)
-const resumoExibido = ref(resumo.map(() => 0))
+const resumoExibido = ref([0, 0, 0, 0])
 let cancelado = false
 
 function contar(destino, aplicar, duracao = 1200) {
@@ -50,12 +58,6 @@ function contar(destino, aplicar, duracao = 1200) {
   }
   requestAnimationFrame(passo)
 }
-
-// Se o XP chegar depois (vindo da API), anima de novo
-watch(
-  () => usuario.xp,
-  (novo) => contar(novo, (v) => (xpExibido.value = v), 1400)
-)
 
 // Missões em andamento vêm do mesmo serviço da tela de Missões
 const missoes = computed(() =>
@@ -76,25 +78,25 @@ const missoes = computed(() =>
 const todosConteudos = ref([])
 
 onMounted(async () => {
-  timer = setTimeout(() => (montado.value = true), 80)
-
-  contar(usuario.xp, (v) => (xpExibido.value = v), 1400)
-  resumo.forEach((item, i) =>
-    contar(item.numero, (v) => (resumoExibido.value[i] = v), 900 + i * 150)
-  )
 
   todosConteudos.value = await listarConteudos()
 
 
   try {
     dados.value = await carregarTelaInicial()
+    contar(perfil.value.xp, (v) => (xpExibido.value = v), 1400)
+    resumo.value.forEach((item, i) =>
+      contar(item.numero, (v) => (resumoExibido.value[i] = v), 900 + i * 150)
+  )
   } catch (e) {
     // mensagem genérica para o usuário; o detalhe só aparece no console de desenvolvimento
     erro.value = 'Não foi possível carregar a tela inicial. Tente novamente.'
     if (import.meta.env.DEV) console.error(e)
   } finally {
-    carregamento.value = false
+    carregando.value = false
+    timer = setTimeout(() =>(montado.value = true), 80)
   }
+
 })
 
 onBeforeUnmount(() => {
@@ -146,8 +148,28 @@ function classeDificuldade(texto) {
 }
 
 const dados = ref(null)
-const carregamento = ref(true)
+const carregando = ref(true)
 const erro = ref('')
+
+function iniciaisDe(nome = '') {
+  const partes = nome.trim().split(/\s+/)
+  const primeira = partes[0]?.[0]?? ''
+  const ultima = partes.length > 1 ? partes[partes.length - 1][0] : ''
+  return (primeira + ultima).toUpperCase()
+}
+
+const perfil = computed(() => {
+  const u = dados.value?.usuario ?? {}
+  return {
+    nome: u.nome_usuario ?? '',
+    inicias: iniciaisDe(u.nome_usuario),
+    nivel: `Nível ${u.nivel_atual} - ${u.nome_level}`,
+    xp: u.xp_usuario ?? 0,
+    xpProximoNivel: u.xp_proximo_level ?? 0,
+    mc: u.coins_usuario ?? 0,
+    progresso: Number(u.progresso_percentual) || 0,
+  }
+})
 
 </script>
 
@@ -161,21 +183,21 @@ const erro = ref('')
     <section class="banner entrada" aria-label="Boas-vindas">
       <div class="banner-texto">
         <small>{{ saudacao }}</small>
-        <h2>{{ usuario.nome }}!</h2>
+        <h2>{{ perfil.nome }}!</h2>
         <p>
           Você está em uma ofensiva de <strong>{{ usuario.ofensiva }} dias</strong>. Continue assim!
         </p>
 
         <div class="banner-chips">
           <span><Icone nome="estrela" :tamanho="15" preenchido />{{ xpExibido.toLocaleString('pt-BR') }} XP</span>
-          <span><Icone nome="moeda" :tamanho="16" />{{ usuario.mc }} MC</span>
+          <span><Icone nome="moeda" :tamanho="16" />{{ perfil.mc }} MC</span>
           <span><Icone nome="chama" :tamanho="15" />{{ usuario.ofensiva }} dias</span>
         </div>
       </div>
 
       <div class="banner-nivel">
-        <div class="banner-avatar" aria-hidden="true">{{ usuario.iniciais }}</div>
-        <small>{{ usuario.nivel }}</small>
+        <div class="banner-avatar" aria-hidden="true">{{ perfil.inicias }}</div>
+        <small>{{ perfil.nivel }}</small>
 
         <div
           class="barra barra-clara"
@@ -188,7 +210,7 @@ const erro = ref('')
           <div class="barra-preenchimento" :style="{ width: (montado ? porcentagemNivel : 0) + '%' }"></div>
         </div>
         <small class="banner-xp">
-          {{ usuario.xp.toLocaleString('pt-BR') }} / {{ usuario.xpProximoNivel.toLocaleString('pt-BR') }} XP
+          {{ perfil.xp.toLocaleString('pt-BR') }} / {{ perfil.xpProximoNivel.toLocaleString('pt-BR') }} XP
         </small>
       </div>
     </section>
