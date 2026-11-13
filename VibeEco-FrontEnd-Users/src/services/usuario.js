@@ -6,7 +6,6 @@ export const usuario = reactive({
   id: 2,
   nome: 'Ana Silva',
   email: 'ana@vibeeco.com',
-  senha: 'senha_hash_456',
   foto:  'https://exemplo.com/fotos/ana.jpg',
   iniciais: 'AS',
   nivel: 'Nível 7 - Guardião',
