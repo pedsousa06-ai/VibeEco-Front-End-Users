@@ -4,6 +4,7 @@ import Icone from '@/components/Icone.vue'
 import { usuario } from '@/services/usuario'
 import { missoesLista, progressoDe, rotuloPrazo, statusDe, xpTotal } from '@/services/missoes'
 import { listarConteudos } from '@/services/conteudos'
+import { carregarTelaInicial } from '@/services/telaInicio'
 
 // TODO: trocar os dados mockados abaixo por chamadas à API
 const porcentagemNivel = computed(() =>
@@ -83,6 +84,17 @@ onMounted(async () => {
   )
 
   todosConteudos.value = await listarConteudos()
+
+
+  try {
+    dados.value = await carregarTelaInicial()
+  } catch (e) {
+    // mensagem genérica para o usuário; o detalhe só aparece no console de desenvolvimento
+    erro.value = 'Não foi possível carregar a tela inicial. Tente novamente.'
+    if (import.meta.env.DEV) console.error(e)
+  } finally {
+    carregamento.value = false
+  }
 })
 
 onBeforeUnmount(() => {
@@ -132,11 +144,20 @@ const conquistas = [
 function classeDificuldade(texto) {
   return texto.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
+
+const dados = ref(null)
+const carregamento = ref(true)
+const erro = ref('')
+
 </script>
 
 <template>
   <div class="inicio">
-    <!-- BANNER DE BOAS-VINDAS -->
+    <p v-if="carregando" role="status">Carregando...</p>
+    <p v-else-if="erro" role="alert">{{ erro }}</p>
+
+    <template v-else>
+      <!-- BANNER DE BOAS-VINDAS -->
     <section class="banner entrada" aria-label="Boas-vindas">
       <div class="banner-texto">
         <small>{{ saudacao }}</small>
@@ -334,6 +355,7 @@ function classeDificuldade(texto) {
         </article>
       </div>
     </div>
+    </template>
   </div>
 </template>
 

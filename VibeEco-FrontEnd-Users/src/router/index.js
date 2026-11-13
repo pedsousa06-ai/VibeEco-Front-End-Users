@@ -21,6 +21,7 @@ import Notificacoes from '@/views/NotificacoesView.vue'
 import Historico from '@/views/HistoricoView.vue'
 import Desafios from '@/views/DesafiosView.vue'
 import DesafioDetalhe from '@/views/DesafioDetalheView.vue'
+import Perfil from '@/views/PerfilView.vue'
 
 // Telas do menu que ainda não foram feitas: usam a tela "Em breve".
 // Quando uma ficar pronta, troque o component dela e remova-a desta lista.
@@ -75,6 +76,7 @@ const router = createRouter({
         { path: 'historico', name: 'historico', component: Historico, meta: { titulo: 'Histórico' } },
         { path: 'desafios', name: 'desafios', component: Desafios, meta: { titulo: 'Desafios' } },
         { path: 'desafios/:id', name: 'desafio-detalhe', component: DesafioDetalhe, meta: { titulo: 'Desafios' } },
+        { path: 'perfil', name: 'perfil', component: Perfil, meta: { titulo: 'Perfil' } },
       ],
     },
 

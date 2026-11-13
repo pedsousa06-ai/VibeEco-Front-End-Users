@@ -18,3 +18,7 @@ export function sair() {
   localStorage.removeItem(CHAVE)
   sessionStorage.removeItem(CHAVE)
 }
+
+export function obterToken() {
+  return localStorage.getItem(CHAVE) || sessionStorage.getItem(CHAVE)
+}
