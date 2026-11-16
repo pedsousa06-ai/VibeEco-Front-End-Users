@@ -2,12 +2,10 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Icone from '@/components/Icone.vue'
 import { usuario } from '@/services/usuario'
-import { missoesLista, progressoDe, rotuloPrazo, statusDe, xpTotal } from '@/services/missoes'
-import { listarConteudos } from '@/services/conteudos'
 import { carregarTelaInicial } from '@/services/telaInicio'
 
 // TODO: trocar os dados mockados abaixo por chamadas à API
-const porcentagemNivel = computed(() => Math.min(100, Math.min(100, Math.max(0, perfil.value.progresso))))
+const porcentagemNivel = computed(() => Math.min(100, Math.max(0, perfil.value.progresso)))
 
 // Saudação conforme o horário
 const saudacao = computed(() => {
@@ -60,27 +58,11 @@ function contar(destino, aplicar, duracao = 1200) {
 }
 
 // Missões em andamento vêm do mesmo serviço da tela de Missões
-const missoes = computed(() =>
-  missoesLista
-    .filter((m) => statusDe(m) === 'andamento')
-    .slice(0, 3)
-    .map((m) => ({
-      id: m.id,
-      categoria: m.categoria,
-      dificuldade: m.dificuldade,
-      titulo: m.titulo,
-      xp: xpTotal(m),
-      prazo: rotuloPrazo(m.prazo),
-      progresso: progressoDe(m),
-    }))
-)
+const missoes = computed(() => dados.value?.missoes_em_andamento ?? [])
 
-const todosConteudos = ref([])
+const conteudos = computed(() => dados.value?.conteudos_recomendados ?? [])
 
 onMounted(async () => {
-
-  todosConteudos.value = await listarConteudos()
-
 
   try {
     dados.value = await carregarTelaInicial()
@@ -104,20 +86,6 @@ onBeforeUnmount(() => {
   cancelado = true
 })
 
-const conteudos = computed(() =>
-  [...todosConteudos.value]
-    .sort((a, b) => Number(a.concluido) - Number(b.concluido))
-    .slice(0, 3)
-    .map((c) => ({
-      id: c.id,
-      categoria: c.categoria,
-      titulo: c.titulo,
-      leitura: `${c.minutos} min leitura`,
-      xp: c.xp,
-      concluido: c.concluido,
-    }))
-)
-
 const diasSemana = [
   { letra: 'S', nome: 'Segunda' },
   { letra: 'T', nome: 'Terça' },
@@ -130,17 +98,35 @@ const diasSemana = [
 // Quantos dos 7 dias da semana já estão cumpridos
 const diasCumpridos = computed(() => Math.min(usuario.ofensiva, 7))
 
-const desafios = [
-  { id: 1, titulo: 'Semana sem Carro', participantes: 230, encerra: '5 dias', xp: 500 },
-  { id: 2, titulo: 'Desafio da Água', participantes: 412, encerra: '1 dia', xp: 300, urgente: true },
-]
+const desafios = computed(() =>
+(dados.value?.desafios_destaque ?? []).map((d) => ({
+  id:d.id,
+  titulo: d.nome_desafio,
+  participantes: d.qtde_participantes,
+  dias: d.prazo_dias,
+  mc: d.super_coins,
+  urgente: d.prazo_dias <= 1
+}))
+)
 
-const conquistas = [
-  { id: 1, nome: 'Primeira Missão', icone: '🌱', cor: 'verde' },
-  { id: 2, nome: 'Reciclador', icone: '♻️', cor: 'verde' },
-  { id: 3, nome: 'Guardião da Água', icone: '💧', cor: 'azul' },
-  { id: 4, nome: 'Eco Energético', icone: '⚡', cor: 'amarelo' },
-]
+function textoPrazo(dias){
+  if(dias <= 0) return 'Encerra hoje'
+  return dias === 1 ? 'Encerra em 1 dia' : `Encerra em ${dias} dias`
+}
+
+const ICONE_PADRAO = '/icone-conquista.png'
+
+const conquistas = computed(() =>
+  (dados.value?.conquistas_recentes ?? []).map((c) => ({
+    id: c.id_usuario_conquista,
+    nome: c.nome_conquista,
+    descricao: c.descricao_conquista,
+    imagem: c.img_conquista?.startsWith('https://')
+    ? c.img_conquista
+    : ICONE_PADRAO 
+  }))
+
+)
 
 // "Médio" -> "medio" (usado só para escolher a cor da dificuldade)
 function classeDificuldade(texto) {
@@ -244,6 +230,10 @@ const perfil = computed(() => {
             <RouterLink to="/missoes" class="ver-todas">Ver todas <Icone nome="seta" :tamanho="14" /></RouterLink>
           </div>
 
+          <p v-if="!missoes.length" class="vazio">
+            Você ainda não tem missões em andamento.
+            <RouterLink to="/missoes">Ver missões</RouterLink>
+          </p>
           <RouterLink
             v-for="(missao, i) in missoes"
             :key="missao.id"
@@ -290,6 +280,10 @@ const perfil = computed(() => {
             <h3 id="titulo-conteudos">Conteúdos Recomendados</h3>
             <RouterLink to="/conteudos" class="ver-todas">Ver todos <Icone nome="seta" :tamanho="14" /></RouterLink>
           </div>
+
+          <p v-if="!conteudos.length" class="vazio">
+            Nenhum conteúdo recomendado por enquanto.
+          </p>
 
           <div class="conteudos">
             <RouterLink
@@ -350,13 +344,15 @@ const perfil = computed(() => {
             </RouterLink>
           </div>
 
+          <p v-if="!desafios.length" class="vazio">Nenhum desafio em destaque no momento</p>
+
           <div v-for="desafio in desafios" :key="desafio.id" class="desafio">
             <div>
               <strong>{{ desafio.titulo }}</strong>
-              <small>{{ desafio.participantes }} participantes</small>
-              <small :class="{ urgente: desafio.urgente }">Encerra em {{ desafio.encerra }}</small>
+              <small>{{ desafio.participantes }} {{ desafio.participantes === 1 ? 'participante' : 'participantes' }}</small>
+              <small :class="{ urgente: desafio.urgente }">{{ textoPrazo(desafio.dias) }}</small>
             </div>
-            <span class="xp"><Icone nome="estrela" :tamanho="13" preenchido />{{ desafio.xp }} XP</span>
+            <span class="xp"><Icone nome="moeda" :tamanho="13" preenchido />{{ desafio.mc}} MC</span>
           </div>
         </article>
 
@@ -368,9 +364,19 @@ const perfil = computed(() => {
               v-for="(conquista, i) in conquistas"
               :key="conquista.id"
               class="conquista"
+              :title="conquista.descricao"
               :style="{ '--i': i }"
             >
-              <span class="conquista-icone" :class="'cor-' + conquista.cor" aria-hidden="true">{{ conquista.icone }}</span>
+              <span class="conquista-icone cor-amarelo" aria-hidden="true">
+                <img
+                  v-if="conquista.imagem"
+                  :src="conquista.imagem"
+                  alt=""
+                  loading="lazy"
+                  referrerpolicy="no-referrer"
+                >
+                <template v-else>🏅</template>
+              </span>
               <span>{{ conquista.nome }}</span>
             </div>
           </div>
@@ -896,6 +902,13 @@ const perfil = computed(() => {
   font-size: 18px;
 }
 
+.conquista-icone img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit ;
+}
+
 /* ---------- RESPONSIVO ---------- */
 @media (max-width: 1200px) {
   .grade {
@@ -975,6 +988,17 @@ const perfil = computed(() => {
 .resumo-card:hover .resumo-icone {
   animation: balancar 0.5s ease;
 }
+
+.vazio {
+  margin: 0;
+  padding: 20px;
+  border: 1px dashed var(--borda);
+  border-radius: 16px;
+  color: var(--texto-suave);
+  font-size: 14px;
+  text-align: center;
+}
+
 @keyframes balancar {
   0%, 100% { transform: rotate(0); }
   25%      { transform: rotate(-12deg) scale(1.1); }
