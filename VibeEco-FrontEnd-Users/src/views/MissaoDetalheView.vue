@@ -7,6 +7,7 @@ import {
   buscarMissao, concluirEtapa, etapaAtual, etapasConcluidas,
   participar, progressoDe, rotuloPrazo, statusDe, xpTotal,
 } from '@/services/missoes'
+import ConfirmarModal from '@/components/ConfirmarModal.vue'
 
 const route = useRoute()
 
@@ -48,9 +49,27 @@ function aoConcluir() {
   const etapa = atual.value
   if (etapa) resultado(concluirEtapa(missao.value, etapa), etapa)
 }
-function aoParticipar() {
-  participar(missao.value) // TODO: confirmar a participação na API
-  avisar('Você entrou na missão! Comece pela primeira etapa.')
+
+const confirmando = ref(false)
+const enviando = ref(false)
+const erroParticipar = ref('')
+
+async function confirmarParticipacao() {
+  enviando.value = true
+  try {
+    await participar(missao.value)
+    confirmando.value = false
+    avisar('Você entrou na missão! Comece pela primeira etapa.')
+  } catch {
+    erroParticipar.value = 'Não foi possível entrar na missão. Tente novamente.'
+  } finally {
+    enviando.value = false
+  } 
+}
+
+function cancelarParticipacao() {
+  confirmando.value = false
+  erroParticipar.value = ''
 }
 
 const classeDificuldade = (d) => d.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -141,7 +160,7 @@ const classeDificuldade = (d) => d.trim().toLowerCase().normalize('NFD').replace
           <button v-if="status === 'andamento'" type="button" class="botao-principal" @click="abrirEtapa">
             Continuar Missão
           </button>
-          <button v-else-if="status === 'disponivel'" type="button" class="botao-principal" @click="aoParticipar">
+          <button v-else-if="status === 'disponivel'" type="button" class="botao-principal" @click="confirmando = true">
             Participar da Missão
           </button>
           <p v-else class="concluida-nota">
@@ -181,7 +200,19 @@ const classeDificuldade = (d) => d.trim().toLowerCase().normalize('NFD').replace
       @fechar="modalAberto = false"
       @concluir="aoConcluir"
     />
+
+    <ConfirmarModal
+      :aberto="confirmando"
+      titulo="Participar desta missão"
+      :texto="`Você tem certeza que deseja participar da missão “${missaoParaParticipar?.titulo}”?`"
+      rotulo-confirmar="Sim, participar"
+      :carregando="enviando"
+      :erro="erroParticipar"
+      @confirmar="confirmarParticipacao"
+      @cancelar="cancelarParticipacao"
+    />
   </div>
+  
 
   <section v-else class="card nao-encontrada">
     <h2>Missão não encontrada</h2>

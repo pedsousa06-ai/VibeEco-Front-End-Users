@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Icone from '@/components/Icone.vue'
 import { missoesLista, participar, progressoDe, rotuloPrazo, statusDe, xpTotal } from '@/services/missoes'
+import ConfirmarModal from '@/components/ConfirmarModal.vue'
 
 const router = useRouter()
 
@@ -29,9 +30,35 @@ const visiveis = computed(() =>
 
 const ROTULO_ACAO = { andamento: 'Continuar', disponivel: 'Participar', concluida: 'Ver detalhes' }
 
+const missaoParaParticipar = ref(null)
+const enviando = ref(false)
+const erroParticipar = ref('')
+
 function acao(cartao) {
-  if (cartao.status === 'disponivel') participar(cartao.m) // TODO: confirmar a participação na API
+  if (cartao.status === 'disponivel'){
+    missaoParaParticipar.value = cartao.m
+    return
+  }
   router.push(`/missoes/${cartao.m.id}`)
+}
+
+function cancelarParticipacao() {
+  missaoParaParticipar.value = null
+  erroParticipar.value = ''
+}
+
+async function confirmarParticipacao() {
+  const m = missaoParaParticipar.value
+  enviando.value = true
+  try {
+    await participar(m) // hoje é mock; depois vira a chamada á API
+    missaoParaParticipar.value = null
+    router.push(`/missoes/${m.id}`)
+  } catch  {
+    erroParticipar.value = 'Não foi possível entrar na missão. Tente novamente.'
+  }finally {
+    enviando.value = false
+  }
 }
 
 // Setas esquerda/direita trocam de aba (padrão de abas acessíveis)
@@ -123,6 +150,16 @@ const classeDificuldade = (d) => d.trim().toLowerCase().normalize('NFD').replace
         </article>
       </div>
     </div>
+    <ConfirmarModal
+      :aberto="!!missaoParaParticipar"
+      titulo="Participar desta missão"
+      :texto="`Você tem certeza que deseja participar da missão “${missaoParaParticipar?.titulo}”?`"
+      rotulo-confirmar="Sim, participar"
+      :carregando="enviando"
+      :erro="erroParticipar"
+      @confirmar="confirmarParticipacao"
+      @cancelar="cancelarParticipacao"
+    />
   </div>
 </template>
 

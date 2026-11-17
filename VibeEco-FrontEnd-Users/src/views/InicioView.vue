@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import Icone from '@/components/Icone.vue'
-import { usuario } from '@/services/usuario'
 import { carregarTelaInicial } from '@/services/telaInicio'
+import { calcularSequencia, semanaAtual } from '@/services/ofensiva'
 
 // TODO: trocar os dados mockados abaixo por chamadas à API
 const porcentagemNivel = computed(() => Math.min(100, Math.max(0, perfil.value.progresso)))
@@ -95,8 +95,16 @@ const diasSemana = [
   { letra: 'S', nome: 'Sábado' },
   { letra: 'D', nome: 'Domingo' },
 ]
-// Quantos dos 7 dias da semana já estão cumpridos
-const diasCumpridos = computed(() => Math.min(usuario.ofensiva, 7))
+
+const sequencia = computed(() => calcularSequencia(dados.value?.ofensiva ?? []))
+const semana = computed(() => semanaAtual(dados.value?.ofensiva ?? []))
+
+// posição de hoje na semana (segunda = 0 ... domingo = 6)
+const indiceHoje = (new Date().getDay() + 6) % 7
+
+function textoDias(n) {
+  return n === 1 ? '1 dia' : `${n} dias`
+}
 
 const desafios = computed(() =>
 (dados.value?.desafios_destaque ?? []).map((d) => ({
@@ -170,14 +178,15 @@ const perfil = computed(() => {
       <div class="banner-texto">
         <small>{{ saudacao }}</small>
         <h2>{{ perfil.nome }}!</h2>
-        <p>
-          Você está em uma ofensiva de <strong>{{ usuario.ofensiva }} dias</strong>. Continue assim!
+        <p v-if="sequencia > 0">
+          Você está em uma ofensiva de <strong>{{ textoDias(sequencia) }} dias</strong>. Continue assim!
         </p>
+        <p v-else>Conclua uma missão ou conteúdo hoje para começar sua ofensiva</p>
 
         <div class="banner-chips">
           <span><Icone nome="estrela" :tamanho="15" preenchido />{{ xpExibido.toLocaleString('pt-BR') }} XP</span>
           <span><Icone nome="moeda" :tamanho="16" />{{ perfil.mc }} MC</span>
-          <span><Icone nome="chama" :tamanho="15" />{{ usuario.ofensiva }} dias</span>
+          <span><Icone nome="chama" :tamanho="15" />{{ textoDias(sequencia) }} dias</span>
         </div>
       </div>
 
@@ -317,8 +326,8 @@ const perfil = computed(() => {
           <h3 class="lateral-titulo"><Icone nome="chama" :tamanho="18" class="icone-laranja" />Ofensiva Diária</h3>
 
           <div class="ofensiva">
-            <strong>{{ usuario.ofensiva }}</strong>
-            <span>dias consecutivos</span>
+            <strong>{{ sequencia }}</strong>
+            <span>{{ sequencia === 1 ? 'dia consecutivo' : 'dias consecutivos' }}</span>
           </div>
 
           <div class="dias" role="list">
@@ -326,10 +335,10 @@ const perfil = computed(() => {
               v-for="(dia, i) in diasSemana"
               :key="i"
               class="dia"
-              :class="{ 'dia-ativo': i < diasCumpridos, 'dia-hoje': i === diasCumpridos - 1 }"
+              :class="{ 'dia-ativo': semana[i], 'dia-hoje': i === indiceHoje }"
               :style="{ '--i': i }"
               role="listitem"
-              :aria-label="`${dia.nome}: ${i < diasCumpridos ? 'cumprido' : 'pendente'}`"
+              :aria-label="`${dia.nome}: ${semana[i] ? 'cumprido' : 'pendente'}`"
             >
               {{ dia.letra }}
             </span>
@@ -374,8 +383,8 @@ const perfil = computed(() => {
                   alt=""
                   loading="lazy"
                   referrerpolicy="no-referrer"
+                  @error.once="event.target.src = ICONE_PADRAO"
                 >
-                <template v-else>🏅</template>
               </span>
               <span>{{ conquista.nome }}</span>
             </div>
