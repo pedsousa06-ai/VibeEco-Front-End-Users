@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { buscarPostPorId, criaComentario, tempoRelativo } from '@/services/feed'
+import { buscarPostPorId, criaComentario } from '@/services/feed'
 import { usuario } from '@/services/usuario'
 import Icone from '@/components/Icone.vue'
 
@@ -16,29 +16,29 @@ const erro = ref('')
 const textoComentario = ref('')
 const enviando = ref(false)
 
-// Como a sua rota `normalizarPost` transforma `p.comentario` em apenas a quantidade (length),
-// precisamos buscar o objeto original ou adaptar o normalizar. 
-// Para simplificar, vou puxar os comentários direto do objeto bruto do post.
-const comentarios = ref([])
-
 async function carregarPost() {
     try {
         carregando.value = true
         erro.value = ''
         
-        // Busca o post. O normalizarPost já traz a contagem de comentários.
         const p = await buscarPostPorId(route.params.id)
         post.value = p
-        
-        // Como o normalizarPost joga os comentários fora (deixa só o length),
-        // precisamos buscar os comentários direto da rota de comentários.
-        // Se você tiver a rota GET /post/:id/comentarios no back, usamos ela.
-        // Caso contrário, o ideal é ajustar o normalizarPost para guardar o array original.
         
     } catch (e) {
         erro.value = e.message
     } finally {
         carregando.value = false
+    }
+}
+
+// <-- FUNÇÃO PARA ANIMAR A CURTIDA
+function curtir() {
+    if (!post.value) return
+    post.value.curtiu = !post.value.curtiu
+    if (post.value.curtiu) {
+        post.value.curtidas++
+    } else {
+        post.value.curtidas--
     }
 }
 
@@ -90,16 +90,32 @@ onMounted(carregarPost)
                 <p class="post-texto">{{ post.texto }}</p>
 
                 <img v-if="post.imagem" class="post-imagem" :src="post.imagem" alt="Imagem do post">
+                
+                <!-- BOTÃO DE CURTIR ANIMADO -->
+                <div class="post-acoes">
+                    <button type="button" class="btn-curtir" :class="{ 'curtido': post.curtiu }" @click="curtir">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8Z" />
+                        </svg>
+                        <span>{{ post.curtidas }} curtidas</span>
+                    </button>
+                </div>
             </article>
 
             <!-- SEÇÃO DE COMENTÁRIOS -->
             <div class="card comentarios-bloco">
                 <h3>Comentários ({{ post.comentarios }})</h3>
                 
-                <!-- Lista de comentários (Aqui você precisará do array bruto) -->
+                <!-- Lista de comentários -->
                 <div class="lista">
-                    <!-- Se você ajustar o normalizarPost para guardar o array, faça o v-for aqui -->
-                    <p v-if="post.comentarios === 0" class="vazio">Nenhum comentário ainda.</p>
+                    <div v-for="c in post.listaComentarios" :key="c.id" class="comentario">
+                        <span class="avatar pequeno">{{ c.iniciais }}</span>
+                        <div class="comentario-texto">
+                            <strong>{{ c.autor }}</strong>
+                            <p>{{ c.texto }}</p>
+                        </div>
+                    </div>
+                    <p v-if="post.comentarios === 0" class="vazio">Nenhum comentário ainda. Seja o primeiro!</p>
                 </div>
 
                 <!-- Caixa de novo comentário -->
@@ -215,8 +231,56 @@ onMounted(carregarPost)
     max-height: 400px;
     object-fit: cover;
     border-radius: 12px;
+    margin-bottom: 16px;
 }
 
+/* --- ANIMAÇÃO DO BOTÃO DE CURTIR --- */
+.post-acoes {
+    display: flex;
+    gap: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--borda);
+}
+
+.btn-curtir {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: var(--texto-suave);
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-curtir svg {
+    fill: transparent;
+    transition: fill 0.2s, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-curtir:hover svg {
+    transform: scale(1.1);
+}
+
+.btn-curtir.curtido {
+    color: #e11d48;
+}
+
+.btn-curtir.curtido svg {
+    fill: #e11d48;
+    animation: pop 0.3s ease-out;
+}
+
+@keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+/* COMENTÁRIOS */
 .comentarios-bloco {
     padding: 20px;
 }
@@ -229,8 +293,26 @@ onMounted(carregarPost)
 
 .lista {
     display: grid;
-    gap: 12px;
+    gap: 16px;
     margin-bottom: 20px;
+}
+
+.comentario {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.comentario-texto strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+
+.comentario-texto p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
 .vazio {
