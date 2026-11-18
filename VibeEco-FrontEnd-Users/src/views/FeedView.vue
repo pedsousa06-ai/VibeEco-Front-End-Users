@@ -1,18 +1,17 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router'; // <-- IMPORTADO
+import { useRouter } from 'vue-router';
 import Icone from '@/components/Icone.vue';
 import NovaPublicacaoModal from '@/components/NovaPublicacaoModal.vue'
 import { criaPost, listarPostsRecentes } from '@/services/feed';
 import { usuario } from '@/services/usuario';
 
-const router = useRouter(); // <-- INSTANCIADO
+const router = useRouter();
 
 const posts = ref([])
 const carregando = ref(true)
 const erroFeed = ref('')
 
-// TODO: preencher com as categorias da API ([{ id, nome }]) quando existir uma rota que as liste
 const categoriasPost = []
 
 const modalAberto = ref(false)
@@ -49,14 +48,22 @@ async function publicar({ texto, categoria, foto}) {
     }
 }
 
-// <-- FUNÇÃO PARA NAVEGAR ATÉ OS DETALHES
 function verDetalhes(id) {
     router.push({ name: 'post-detalhe', params: { id } })
 }
 
+// <-- FUNÇÃO PARA ANIMAR A CURTIDA
+function curtir(post) {
+    post.curtiu = !post.curtiu
+    if (post.curtiu) {
+        post.curtidas++
+    } else {
+        post.curtidas--
+    }
+}
+
 onMounted(carregar)
 
-// TODO: ranking e desafios ainda não têm endpont no back-end 
 const ranking = [
     { id: 1, nome: 'Carlos Mendes', iniciais: 'CM', xp: 4200, medalha: '🥇'},
     { id: 2, nome: 'Fernanda Lima', iniciais: 'FL', xp: 3850, medalha: '🥈'},
@@ -74,7 +81,6 @@ const desafios = [
 <template>
     <div class="feed">
         <div class="principal">
-            <!-- CAIXA DE NOVA PUBLICAÇÃO -->
              <div class="card compor">
                 <span class="avatar" aria-hidden="true">{{ usuario.iniciais }}</span>
                 <button type="button" class="campo" @click="abrirModal">
@@ -92,7 +98,6 @@ const desafios = [
 
              <p v-else-if="!posts.length" class="aviso">Ainda não há publicações. Seja o primeiro a compartilhar!</p>
 
-             <!-- ADICIONADO O @CLICK="VERDETALHES(POST.ID)" AQUI -->
              <article v-for="post in posts" v-else :key="post.id" class="card post clicavel" @click="verDetalhes(post.id)">
                 <header class="post-topo">
                     <span class="avatar" aria-hidden="true">{{ post.iniciais }}</span>
@@ -110,25 +115,26 @@ const desafios = [
                 <img v-if="post.imagem" class="post-imagem" :src="post.imagem" :alt="`Imagem da publicação de ${post.autor}`" loading="lazy">
 
                 <footer class="post-rodape">
-                  <span class="contagem">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <!-- BOTÃO DE CURTIR ANIMADO -->
+                  <button type="button" class="contagem btn-curtir" :class="{ 'curtido': post.curtiu }" @click.stop="curtir(post)">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8Z" />
                     </svg>
                      {{ post.curtidas }}
                     <span class="so-leitor">curtidas</span>
-                    </span>
-                     <span class="contagem">
+                  </button>
+                  
+                  <span class="contagem">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z" />
                     </svg>
                      {{ post.comentarios }}
                       <span class="so-leitor">comentários</span>
-                    </span>
+                  </span>
                 </footer>
             </article>
         </div>
 
-        <!-- COLUNA DA DIREITA -->
         <aside class="lateral" aria-label="Ranking e desafios">
           <section class="card bloco">
             <h3><span>Ranking da Semana</span><Icone nome="trofeu" :tamanho="16" class="icone-amarelo"/></h3>
@@ -165,7 +171,6 @@ const desafios = [
 </template>
 
 <style scoped>
-/* ... O SEU CSS ORIGINAL INTEIRO ... */
 .feed {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
@@ -177,7 +182,6 @@ const desafios = [
   gap: 16px;
   min-width: 0;
 }
- 
 .card {
   border: 1px solid var(--borda);
   border-radius: 16px;
@@ -201,8 +205,6 @@ const desafios = [
   height: 30px;
   font-size: 11px;
 }
- 
-/* compor */
 .compor {
   display: flex;
   align-items: center;
@@ -249,7 +251,6 @@ const desafios = [
   outline: 3px solid #1fe05a;
   outline-offset: 2px;
 }
- 
 .aviso {
   display: grid;
   justify-items: center;
@@ -269,15 +270,11 @@ const desafios = [
   border-color: #f7caca;
   color: #b91c1c;
 }
- 
-/* posts */
 .post {
   display: grid;
   gap: 12px;
   padding: 16px;
 }
-
-/* ADICIONADO EFEITO VISUAL DE CLIQUE NO POST */
 .post.clicavel {
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
@@ -287,7 +284,6 @@ const desafios = [
   border-color: #bfe0c8;
   box-shadow: 0 10px 24px -12px rgba(18, 38, 26, 0.25);
 }
-
 .post-topo {
   display: flex;
   align-items: center;
@@ -339,6 +335,36 @@ const desafios = [
   align-items: center;
   gap: 6px;
 }
+
+/* --- ANIMAÇÃO DO BOTÃO DE CURTIR --- */
+.btn-curtir {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.btn-curtir svg {
+  fill: transparent;
+  transition: fill 0.2s, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.btn-curtir:hover svg {
+  transform: scale(1.1);
+}
+.btn-curtir.curtido {
+  color: #e11d48; /* Cor de curtida */
+}
+.btn-curtir.curtido svg {
+  fill: #e11d48;
+  animation: pop 0.3s ease-out;
+}
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
 .so-leitor {
   position: absolute;
   width: 1px;
@@ -346,8 +372,6 @@ const desafios = [
   overflow: hidden;
   clip: rect(0 0 0 0);
 }
- 
-/* lateral */
 .lateral {
   display: grid;
   gap: 16px;
@@ -409,7 +433,6 @@ const desafios = [
   font-size: 12px;
   color: var(--texto-suave);
 }
- 
 @media (max-width: 1100px) {
   .feed {
     grid-template-columns: minmax(0, 1fr);
