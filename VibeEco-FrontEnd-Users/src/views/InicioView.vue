@@ -124,6 +124,13 @@ function textoPrazo(dias){
 
 const ICONE_PADRAO = '/icone-conquista.png'
 
+function imagemFalhou(e) {
+  const img = e.target
+  if (img.dataset.padrao) return // o padrão também falhou: não tenta de novo
+  img.dataset.padrao = '1'
+  img.src = ICONE_PADRAO
+}
+
 const conquistas = computed(() =>
   (dados.value?.conquistas_recentes ?? []).map((c) => ({
     id: c.id_usuario_conquista,
@@ -179,14 +186,14 @@ const perfil = computed(() => {
         <small>{{ saudacao }}</small>
         <h2>{{ perfil.nome }}!</h2>
         <p v-if="sequencia > 0">
-          Você está em uma ofensiva de <strong>{{ textoDias(sequencia) }} dias</strong>. Continue assim!
+          Você está em uma ofensiva de <strong>{{ textoDias(sequencia) }}</strong>. Continue assim!
         </p>
         <p v-else>Conclua uma missão ou conteúdo hoje para começar sua ofensiva</p>
 
         <div class="banner-chips">
           <span><Icone nome="estrela" :tamanho="15" preenchido />{{ xpExibido.toLocaleString('pt-BR') }} XP</span>
           <span><Icone nome="moeda" :tamanho="16" />{{ perfil.mc }} MC</span>
-          <span><Icone nome="chama" :tamanho="15" />{{ textoDias(sequencia) }} dias</span>
+          <span><Icone nome="chama" :tamanho="15" />{{ textoDias(sequencia) }}</span>
         </div>
       </div>
 
@@ -383,7 +390,7 @@ const perfil = computed(() => {
                   alt=""
                   loading="lazy"
                   referrerpolicy="no-referrer"
-                  @error.once="event.target.src = ICONE_PADRAO"
+                  @error="imagemFalhou"
                 >
               </span>
               <span>{{ conquista.nome }}</span>

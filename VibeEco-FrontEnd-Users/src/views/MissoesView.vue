@@ -1,9 +1,10 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Icone from '@/components/Icone.vue'
-import { missoesLista, participar, progressoDe, rotuloPrazo, statusDe, xpTotal } from '@/services/missoes'
+import { participar, } from '@/services/missoes'
 import ConfirmarModal from '@/components/ConfirmarModal.vue'
+import { listarMissoes } from '@/services/misssoesApi'
 
 const router = useRouter()
 
@@ -15,9 +16,45 @@ const abas = [
 ]
 const abaAtual = ref('todas')
 
-const cartoes = computed(() =>
-  missoesLista.map((m) => ({ m, status: statusDe(m), progresso: progressoDe(m), xp: xpTotal(m) }))
+const STATUS = { EM_ANDAMENTO: 'andamento', CONCLUIDA: 'concluida' }
+
+const missoes = ref([])
+const carregando = ref(true)
+const erro = ref('')
+
+onMounted(async () => {
+  try {
+    missoes.value = await listarMissoes()
+  } catch (e) {
+    erro.value = 'Não foi possível carregar as missões. Tente novamente.'
+    if (import.meta.env.DEV) console.error(e)
+  }finally {
+    carregando.value = false
+}
+})
+
+function textoPrazo(dias) {
+  if (dias <= 0 ) return 'Hoje'
+  return dias === 1 ? '1 dia' : `${dias} dias`
+}
+
+const cartoes = computed(() => 
+  missoes.value.map((m) => ({
+    m: {
+      id: m.id_missao,
+      titulo: m.nome_missao,
+      resumo: m.descricao_missao,
+      categorias: (m.categoria ?? []).map((c) => c.nome_categoria),
+      dificuldade: m.nome_dificuldade ?? '',
+      mc: m.cois_missao,
+      prazo: m.prazo_dias,
+    },
+    status: STATUS[m.status_missao] ?? 'disponivel',
+    progresso: Math.min(100, Math.max(0, Number(m.progresso_missao) || 0)),
+    xp: m.xp_missao,
+  }))
 )
+
 const contagem = computed(() => ({
   todas: cartoes.value.length,
   disponivel: cartoes.value.filter((c) => c.status === 'disponivel').length,
@@ -104,12 +141,14 @@ const classeDificuldade = (d) => d.trim().toLowerCase().normalize('NFD').replace
     </div>
 
     <div id="painel-missoes" role="tabpanel" :aria-labelledby="`aba-${abaAtual}`">
-      <p v-if="!visiveis.length" class="vazio">Nenhuma missão nesta categoria por enquanto.</p>
+      <p v-if="carregando" role="status" class="vazio">Carregando...</p>
+      <p v-else-if="erro" role="alert" class="vazio">{{ erro }}</p>
+      <p v-else-if="!visiveis.length" class="vazio">Nenhuma missão nesta categoria por enquanto.</p>
 
       <div v-else class="grade">
         <article v-for="c in visiveis" :key="c.m.id" class="card">
           <div class="tags">
-            <span class="tag">{{ c.m.categoria }}</span>
+            <span v-for="nome in c.m.categorias" :key="nome" class="tag">{{ nome }}</span>
             <span class="tag" :class="'dif-' + classeDificuldade(c.m.dificuldade)">{{ c.m.dificuldade }}</span>
             <span v-if="c.status === 'concluida'" class="tag tag-concluida">Concluída</span>
           </div>
@@ -137,8 +176,8 @@ const classeDificuldade = (d) => d.trim().toLowerCase().normalize('NFD').replace
               <span class="xp"><Icone nome="estrela" :tamanho="15" preenchido />{{ c.xp }} XP</span>
               <span class="mc"><Icone nome="moeda" :tamanho="16" />{{ c.m.mc }}</span>
             </div>
-            <span v-if="c.m.prazo && c.status !== 'concluida'" class="prazo">
-              <Icone nome="relogio" :tamanho="13" />{{ rotuloPrazo(c.m.prazo) }}
+            <span v-if="c.m.prazo != null && c.status !== 'concluida'" class="prazo">
+              <Icone nome="relogio" :tamanho="13" />{{ textoPrazo(c.m.prazo) }}
             </span>
           </div>
 
