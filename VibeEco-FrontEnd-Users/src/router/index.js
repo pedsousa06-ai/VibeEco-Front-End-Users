@@ -23,6 +23,9 @@ import Desafios from '@/views/DesafiosView.vue'
 import DesafioDetalhe from '@/views/DesafioDetalheView.vue'
 import Perfil from '@/views/PerfilView.vue'
 
+// IMPORTAÇÃO DA NOVA TELA DE DETALHES DO POST
+import PostDetalhe from '@/views/PostDetalheView.vue'
+
 // Telas do menu que ainda não foram feitas: usam a tela "Em breve".
 // Quando uma ficar pronta, troque o component dela e remova-a desta lista.
 
@@ -69,6 +72,10 @@ const router = createRouter({
           meta: { titulo: 'Biblioteca de conteúdos' },
         },
         { path: 'feed', name: 'feed', component: Feed, meta: { titulo: 'Feed da Comunidade' } },
+        
+        // ROTA DA NOVA TELA DE DETALHES DO POST
+        { path: 'feed/:id', name: 'post-detalhe', component: PostDetalhe, meta: { titulo: 'Publicação' } },
+        
         { path: 'ranking', name: 'ranking', component: Ranking, meta: { titulo: 'Ranking' } },
         { path: 'configuracoes', name: 'configuracoes', component: Configuracoes, meta: { titulo: 'Configurações' } },
         { path: 'recompensas', name: 'recompensas', component: Recompensas, meta: { titulo: 'Recompensas' } },
