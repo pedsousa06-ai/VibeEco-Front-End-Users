@@ -1,10 +1,10 @@
 <script setup>
-import { onBeforeUnmount, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Icone from '@/components/Icone.vue';
 import Interruptor from '@/components/Interruptor.vue';
 import { sair } from '@/services/auth';
-import { configuracoes } from '@/services/configuracoes';
+import { configuracoes, carregarConfiguracoes } from '@/services/configuracoes';
 import { usuario } from '@/services/usuario';
 
 const router = useRouter()
@@ -36,6 +36,15 @@ function avisar(texto) {
     clearTimeout(timer)
     timer = setTimeout(() => (aviso.value = ''), 3000)
 }
+
+onMounted(() => {
+    // Pega o ID independente de como o 'usuario' está exportado no seu auth
+    const id = usuario.value?.id || usuario?.id
+    if (id) {
+        carregarConfiguracoes(id)
+    }
+})
+
 onBeforeUnmount(() => clearTimeout(timer))
 
 function deslogar() {
