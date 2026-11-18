@@ -4,13 +4,16 @@ import Icone from '@/components/Icone.vue'
 import IconeTipo from '@/components/IconeTipo.vue'
 import DetalheLateral from '@/components/DetalheLateral.vue'
 import { TIPOS } from '@/services/tipos'
-import { atividades, resumoHistorico } from '@/services/historico'
+// Importa o service que busca do banco
+import { atividades, resumoHistorico, carregarHistorico } from '@/services/historico'
+// Importa o usuario para pegar o ID logado
+import { usuario } from '@/services/usuario'
 
 const reduzMovimento =
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 // ---------- CONTADORES DO TOPO ----------
-const numeros = ref(resumoHistorico.map(() => 0))
+const numeros = ref([])
 let cancelado = false
 
 function contar(destino, aplicar, duracao = 1000) {
@@ -25,11 +28,21 @@ function contar(destino, aplicar, duracao = 1000) {
   requestAnimationFrame(passo)
 }
 
-onMounted(() => {
-  resumoHistorico.forEach((item, i) =>
+onMounted(async () => {
+  // 1. Busca os dados do banco
+  const id = usuario.value?.id || usuario?.id
+  if (id) {
+    await carregarHistorico(id)
+  }
+
+  // 2. Inicializa os números com zero e roda a animação de contagem
+  numeros.value = resumoHistorico.value.map(() => 0)
+  
+  resumoHistorico.value.forEach((item, i) =>
     contar(item.numero, (v) => (numeros.value[i] = v), 800 + i * 150)
   )
 })
+
 onBeforeUnmount(() => (cancelado = true))
 
 // ---------- FILTRO ----------
@@ -53,7 +66,6 @@ function dataDe(diasAtras) {
   return data
 }
 
-// "HOJE, 05 NOV 2026", "ONTEM, 04 NOV 2026", "03 NOV 2026"
 function rotuloDia(diasAtras) {
   const d = dataDe(diasAtras)
   const base = `${String(d.getDate()).padStart(2, '0')} ${MESES[d.getMonth()]} ${d.getFullYear()}`
@@ -62,7 +74,6 @@ function rotuloDia(diasAtras) {
   return base
 }
 
-// "Hoje, 5 de novembro de 2026 às 14:32"
 function quandoDe(atividade) {
   const data = dataDe(atividade.diasAtras).toLocaleDateString('pt-BR', {
     day: 'numeric',
@@ -77,7 +88,7 @@ function quandoDe(atividade) {
 const grupos = computed(() => {
   const mapa = new Map()
   let ordem = 0
-  for (const a of atividades) {
+  for (const a of atividades.value) { // Usa .value pois é uma ref do service
     if (filtro.value !== 'todos' && a.tipo !== filtro.value) continue
     if (!mapa.has(a.diasAtras)) mapa.set(a.diasAtras, [])
     mapa.get(a.diasAtras).push({ ...a, ordem: ordem++ })
