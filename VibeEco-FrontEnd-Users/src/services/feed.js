@@ -58,6 +58,7 @@ function normalizarPost(p) {
   const nome = p.nome_usuario ?? 'Usuário'
   const anexos = Array.isArray(p.anexo) ? p.anexo : []
   const categorias = Array.isArray(p.categoria) ? p.categoria : []
+  const comentarios = Array.isArray(p.comentario) ? p.comentario : []
 
   return {
     id: p.id,
@@ -68,7 +69,18 @@ function normalizarPost(p) {
     categoria: categorias[0]?.nome_categoria ?? null,
     imagem: anexos[0]?.endereco_url ?? null,
     curtidas: Number(p.qtde_curtida ?? 0),
-    comentarios: Array.isArray(p.comentario) ? p.comentario.length : 0,
+    
+    // Contagem para exibir no card do feed
+    comentarios: comentarios.length, 
+    
+    // ADIÇÃO: Array original com os dados completos dos comentários para a tela de detalhes
+    listaComentarios: comentarios.map(c => ({
+      id: c.id_post_comentario,
+      autor: c.nome_usuario ?? 'Usuário',
+      iniciais: iniciaisDe(c.nome_usuario),
+      texto: c.nome_comentario,
+      tempo: tempoRelativo(c.data_comentario)
+    }))
   }
 }
 
@@ -96,6 +108,43 @@ export async function criaPost({ texto, categoriaId, foto, idUsuario }) {
   if (!ok) {
     const campo = corpo?.field ? ` ${corpo.field}` : ''
     throw new Error((corpo?.message ?? `Erro ${status} ao publicar.`) + campo)
+  }
+  return corpo
+}
+
+// ============================================================================
+// NOVAS FUNÇÕES PARA A TELA DE DETALHES DO POST
+// ============================================================================
+
+// GET /post/:id
+// Busca um único post pelo ID. A rota precisa existir no back-end
+export async function buscarPostPorId(idPost) {
+  const { ok, status, corpo } = await requisitar(`/post/${idPost}`)
+  
+  if (!ok) throw new Error(corpo?.message ?? `Erro ${status} ao buscar post.`)
+  
+  // Pega a resposta do back-end. Pode vir em formato de array dependendo do controller.
+  const bruto = corpo?.response?.post?.[0] || corpo?.response?.[0] || corpo?.[0]
+  
+  return bruto ? normalizarPost(bruto) : null
+}
+
+// POST /post/:id/comentario
+// Cria um novo comentário no post
+export async function criaComentario({ idPost, idUsuario, comentario }) {
+  const { ok, status, corpo } = await requisitar(`/post/${idPost}/comentario`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ 
+      id_usuario: idUsuario, 
+      comentario: comentario 
+    })
+  })
+
+  if (!ok) {
+    throw new Error(corpo?.message ?? `Erro ${status} ao enviar comentário.`)
   }
   return corpo
 }
