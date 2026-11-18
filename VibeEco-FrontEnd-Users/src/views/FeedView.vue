@@ -1,9 +1,12 @@
 <script setup>
 import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router'; // <-- IMPORTADO
 import Icone from '@/components/Icone.vue';
 import NovaPublicacaoModal from '@/components/NovaPublicacaoModal.vue'
 import { criaPost, listarPostsRecentes } from '@/services/feed';
 import { usuario } from '@/services/usuario';
+
+const router = useRouter(); // <-- INSTANCIADO
 
 const posts = ref([])
 const carregando = ref(true)
@@ -46,6 +49,11 @@ async function publicar({ texto, categoria, foto}) {
     }
 }
 
+// <-- FUNÇÃO PARA NAVEGAR ATÉ OS DETALHES
+function verDetalhes(id) {
+    router.push({ name: 'post-detalhe', params: { id } })
+}
+
 onMounted(carregar)
 
 // TODO: ranking e desafios ainda não têm endpont no back-end 
@@ -84,7 +92,8 @@ const desafios = [
 
              <p v-else-if="!posts.length" class="aviso">Ainda não há publicações. Seja o primeiro a compartilhar!</p>
 
-             <article v-for="post in posts" v-else :key="post.id" class="card post">
+             <!-- ADICIONADO O @CLICK="VERDETALHES(POST.ID)" AQUI -->
+             <article v-for="post in posts" v-else :key="post.id" class="card post clicavel" @click="verDetalhes(post.id)">
                 <header class="post-topo">
                     <span class="avatar" aria-hidden="true">{{ post.iniciais }}</span>
                     <div class="post-autor">
@@ -156,6 +165,7 @@ const desafios = [
 </template>
 
 <style scoped>
+/* ... O SEU CSS ORIGINAL INTEIRO ... */
 .feed {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
@@ -266,6 +276,18 @@ const desafios = [
   gap: 12px;
   padding: 16px;
 }
+
+/* ADICIONADO EFEITO VISUAL DE CLIQUE NO POST */
+.post.clicavel {
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.post.clicavel:hover {
+  transform: translateY(-2px);
+  border-color: #bfe0c8;
+  box-shadow: 0 10px 24px -12px rgba(18, 38, 26, 0.25);
+}
+
 .post-topo {
   display: flex;
   align-items: center;
