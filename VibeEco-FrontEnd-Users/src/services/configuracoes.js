@@ -1,30 +1,28 @@
 import { reactive, watch } from "vue";
-import '@/assets/acessibilidade.css'
+import '@/assets/acessibilidade.css';
+import { usuario } from './usuario'; 
 
-// Preferências da tela de Configurações.
-// Por enquanto ficam só neste navegador (localStorage). Quando houver endpoint no back-end,
-// troque a leitura/gravação abaixo por chamadas à API.
 const CHAVE = 'vebeeco:configuracoes'
+const API_URL = 'http://localhost:8080/v1/senai/vibeEco' // URL do seu back-end
 
 const PADRAO = {
     idioma: 'pt-BR',
     altoContraste: false,
-    tamanhoFonte: 'medio', // 'pequeno' | 'medio(padrão)' | 'grande'
+    tamanhoFonte: 'medio',
     animacoes: true,
-     // privacidade
-     aparecerNoRanking: true,
-     atividadesVisiveis: false,
-     perfilPublico: true,
-     tema: 'claro', // 'claro' | 'escuro'
+    aparecerNoRanking: true,
+    atividadesVisiveis: false,
+    perfilPublico: true,
+    tema: 'claro',
 }
 
-const ESCALA = { pequeno: 0.9, medio: 1, grande: 1.12}
+const ESCALA = { pequeno: 0.9, medio: 1, grande: 1.12 }
 
-function ler(){
+function ler() {
     try {
         return { ...PADRAO, ...(JSON.parse(localStorage.getItem(CHAVE)) ?? {}) }
     } catch {
-        return {...PADRAO}
+        return { ...PADRAO }
     }
 }
 
@@ -40,14 +38,57 @@ function aplicar() {
 }
 
 aplicar()
+
+// ============================================================================
+// INTEGRAÇÃO COM O BACK-END (USANDO FETCH NATIVO)
+// ============================================================================
+
+export async function carregarConfiguracoes(idUsuario) {
+    if (!idUsuario) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/configuracoes/${idUsuario}`)
+        
+        if (!response.ok) throw new Error('Erro na requisição')
+        
+        const data = await response.json()
+        
+        Object.assign(configuracoes, data)
+        localStorage.setItem(CHAVE, JSON.stringify(configuracoes))
+        aplicar()
+    } catch (error) {
+        console.error('Erro ao buscar configurações do banco:', error)
+    }
+}
+
+let timeoutSalvar
+
 watch(
     configuracoes,
     () => {
         aplicar()
-        try{
+        try {
             localStorage.setItem(CHAVE, JSON.stringify(configuracoes))
-        } catch {
-            /* Por enquanto segue sem armazenamento disponivel */
+        } catch { /* ignora */ }
+
+        const idUsuario = usuario.value?.id || usuario?.id 
+        
+        if (idUsuario) {
+            clearTimeout(timeoutSalvar)
+            timeoutSalvar = setTimeout(async () => {
+                try {
+                    await fetch(`${API_URL}/configuracoes/${idUsuario}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(configuracoes)
+                    })
+                    console.log('Configurações salvas no banco!')
+                } catch (error) {
+                    console.error('Erro ao salvar configurações no banco:', error)
+                }
+            }, 800)
         }
     },
     { deep: true },
