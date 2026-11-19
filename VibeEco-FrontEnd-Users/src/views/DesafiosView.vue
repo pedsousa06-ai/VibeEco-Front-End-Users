@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import DesafioIcone from '@/components/DesafioIcone.vue'
+import ConfirmarAbandono from '@/components/ConfirmarAbandono.vue'
 import {
   CATEGORIAS,
   DIFICULDADES,
@@ -29,15 +30,30 @@ function daAba(id) {
 const visiveis = computed(() => daAba(aba.value))
 const participando = computed(() => desafios.filter((d) => d.participando).length)
 
+// --- CONTROLE DO MODAL DE ABANDONO ---
+const modalAbandonoAberto = ref(false)
+const desafioAlvo = ref(null)
+
+function tentarSair(desafio) {
+  desafioAlvo.value = desafio
+  modalAbandonoAberto.value = true
+}
+
+function confirmarAbandono() {
+  if (desafioAlvo.value) {
+    abandonar(desafioAlvo.value)
+  }
+  modalAbandonoAberto.value = false
+  desafioAlvo.value = null
+}
+
 // ---------- AÇÕES ----------
 function entrar(desafio) {
   participar(desafio)
   // leva direto para as tarefas do desafio
   router.push({ name: 'desafio-detalhe', params: { id: desafio.id } })
 }
-function sair(desafio) {
-  abandonar(desafio)
-}
+
 function pct(valor, total) {
   return Math.min(100, Math.round((valor / total) * 100))
 }
@@ -126,7 +142,8 @@ function pct(valor, total) {
           <span class="tempo"><DesafioIcone nome="relogio" :tamanho="14" /> {{ rotuloDias(d.dias) }}</span>
         </div>
 
-        <button v-if="d.participando" type="button" class="botao botao-suave" @click="sair(d)">
+        <!-- MODIFICADO: Chama a função tentarSair em vez de sair direto -->
+        <button v-if="d.participando" type="button" class="botao botao-suave" @click="tentarSair(d)">
           Abandonar desafio
         </button>
         <button v-else type="button" class="botao" @click="entrar(d)">Participar do desafio</button>
@@ -137,6 +154,13 @@ function pct(valor, total) {
         <p>Novos desafios aparecem aqui assim que forem publicados.</p>
       </div>
     </div>
+
+    <!-- MODAL DE CONFIRMAÇÃO -->
+    <ConfirmarAbandono 
+      v-if="modalAbandonoAberto" 
+      @confirmar="confirmarAbandono" 
+      @cancelar="modalAbandonoAberto = false" 
+    />
   </div>
 </template>
 

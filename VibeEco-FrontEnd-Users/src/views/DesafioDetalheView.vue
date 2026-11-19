@@ -1,26 +1,24 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import DesafioIcone from '@/components/DesafioIcone.vue'
+import ConfirmarAbandono from '@/components/ConfirmarAbandono.vue' // Import do Modal
 import {
   CATEGORIAS,
   DIFICULDADES,
   ESCOPOS,
   abandonar,
-  alternarTarefa,
   buscarDesafio,
   concluido,
   participar,
   progressoDe,
   rotuloDias,
-  tarefasFeitas,
 } from '@/services/desafios'
 
 const route = useRoute()
 const desafio = computed(() => buscarDesafio(route.params.id))
 
 const progresso = computed(() => (desafio.value ? progressoDe(desafio.value) : 0))
-const feitas = computed(() => (desafio.value ? tarefasFeitas(desafio.value) : 0))
 const terminou = computed(() => (desafio.value ? concluido(desafio.value) : false))
 
 // anel de progresso (círculo de raio 52)
@@ -30,6 +28,31 @@ const deslocamento = computed(() => CIRCUNFERENCIA * (1 - progresso.value / 100)
 const participacao = computed(() =>
   desafio.value ? Math.min(100, Math.round((desafio.value.participantes / desafio.value.meta) * 100)) : 0,
 )
+
+// --- CONTROLE DO MODAL DE ABANDONO ---
+const modalAbandonoAberto = ref(false)
+
+function tentarAbandonar() {
+  modalAbandonoAberto.value = true
+}
+
+function confirmarAbandono() {
+  if (desafio.value) {
+    abandonar(desafio.value)
+  }
+  modalAbandonoAberto.value = false
+}
+
+// --- AÇÃO DE CONCLUIR DESAFIO ---
+function concluirDesafio() {
+  // Se você tiver uma função no seu serviço 'desafios', chame ela aqui:
+  // ex: finalizarDesafio(desafio.value)
+  
+  if (desafio.value) {
+    desafio.value.tarefas.forEach(t => t.feita = true)
+    // ou desafio.value.concluido = true (depende da sua model)
+  }
+}
 </script>
 
 <template>
@@ -103,64 +126,60 @@ const participacao = computed(() =>
           </svg>
           <div class="anel-texto">
             <strong>{{ progresso }}%</strong>
-            <span>{{ feitas }}/{{ desafio.tarefas.length }} tarefas</span>
+            <span>{{ terminou ? 'Concluído' : 'Pendente' }}</span>
           </div>
         </div>
       </header>
 
-      <!-- TAREFAS -->
+      <!-- CONCLUSÃO -->
       <section class="tarefas entrada" :style="{ '--i': 2 }" aria-labelledby="titulo-tarefas">
-        <div class="tarefas-topo">
-          <h3 id="titulo-tarefas">Tarefas</h3>
-          <span v-if="desafio.participando" class="contagem">{{ feitas }} de {{ desafio.tarefas.length }} concluídas</span>
+        <div class="tarefas-topo" style="justify-content: center; text-align: center; margin-bottom: 8px;">
+          <h3 id="titulo-tarefas">Você cumpriu este desafio?</h3>
         </div>
 
         <Transition name="aviso">
-          <p v-if="!desafio.participando" class="aviso">
-            Participe do desafio para começar a marcar as tarefas.
+          <p v-if="!desafio.participando" class="aviso" style="text-align: center;">
+            Participe do desafio para poder marcá-lo como concluído.
           </p>
         </Transition>
 
         <Transition name="aviso">
-          <div v-if="terminou" class="parabens" role="status">
+          <div v-if="terminou" class="parabens" role="status" style="text-align: center; justify-items: center;">
+            <DesafioIcone nome="check" :tamanho="36" style="color: #16a34a; margin-bottom: 8px;" />
             <strong>Desafio concluído!</strong>
             <span>Você ganhou {{ desafio.xp }} XP e {{ desafio.mc }} MC.</span>
           </div>
         </Transition>
 
-        <ol class="lista">
-          <li v-for="(t, i) in desafio.tarefas" :key="t.id" class="item entrada" :style="{ '--i': i + 3 }">
-            <button
-              type="button"
-              class="tarefa"
-              :class="{ 'tarefa-feita': t.feita }"
-              :disabled="!desafio.participando"
-              role="checkbox"
-              :aria-checked="t.feita"
-              @click="alternarTarefa(desafio, t)"
-            >
-              <span class="caixa"><DesafioIcone nome="check" :tamanho="16" /></span>
-              <span class="tarefa-texto">
-                <strong>{{ t.titulo }}</strong>
-                <span>{{ t.descricao }}</span>
-              </span>
-            </button>
-          </li>
-        </ol>
+        <!-- BOTÃO DE CONCLUIR DIRETO -->
+        <div v-if="desafio.participando && !terminou" class="acao" style="margin-top: 8px;">
+          <button type="button" class="botao" @click="concluirDesafio">
+            Sim, cumpri o desafio
+          </button>
+        </div>
       </section>
 
-      <!-- AÇÃO -->
+      <!-- AÇÃO SECUNDÁRIA (Abandonar / Participar) -->
       <div class="acao entrada" :style="{ '--i': 4 }">
-        <button v-if="desafio.participando" type="button" class="botao botao-suave" @click="abandonar(desafio)">
+        <!-- MODIFICADO: Chama a função tentarAbandonar em vez da função abandonar direta -->
+        <button v-if="desafio.participando" type="button" class="botao botao-suave" @click="tentarAbandonar">
           Abandonar desafio
         </button>
         <button v-else type="button" class="botao" @click="participar(desafio)">Participar do desafio</button>
       </div>
     </template>
+
+    <!-- MODAL DE CONFIRMAÇÃO -->
+    <ConfirmarAbandono 
+      v-if="modalAbandonoAberto" 
+      @confirmar="confirmarAbandono" 
+      @cancelar="modalAbandonoAberto = false" 
+    />
   </div>
 </template>
 
 <style scoped>
+/* O CSS continua exatamente o mesmo, pois as classes de layout se mantêm */
 .pagina {
   display: grid;
   gap: 20px;
@@ -351,12 +370,8 @@ const participacao = computed(() =>
 }
 .tarefas h3 {
   margin: 0;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 800;
-}
-.contagem {
-  color: var(--texto-suave);
-  font-size: 13px;
 }
 .aviso {
   margin: 0;
@@ -368,8 +383,8 @@ const participacao = computed(() =>
 }
 .parabens {
   display: grid;
-  gap: 2px;
-  padding: 14px 16px;
+  gap: 4px;
+  padding: 20px 16px;
   border: 1px solid #fcd34d;
   border-radius: 12px;
   background: #fffbeb;
@@ -377,93 +392,7 @@ const participacao = computed(() =>
   font-size: 14px;
 }
 .parabens strong {
-  font-size: 16px;
-}
-
-.lista {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.tarefa {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  width: 100%;
-  padding: 14px 16px;
-  border: 1px solid var(--borda);
-  border-radius: 14px;
-  background: #fff;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: transform 0.15s, border-color 0.2s, background 0.3s, box-shadow 0.15s;
-}
-.tarefa:hover:not(:disabled) {
-  transform: translateY(-1px);
-  border-color: #bfe0c8;
-  box-shadow: 0 8px 20px -12px rgba(18, 38, 26, 0.3);
-}
-.tarefa:focus-visible {
-  outline: 3px solid #1fe05a;
-  outline-offset: 2px;
-}
-.tarefa:disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-.tarefa-feita {
-  border-color: #22c55e;
-  background: #dcf8e6;
-}
-.caixa {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 26px;
-  height: 26px;
-  margin-top: 1px;
-  border: 2px solid #b6cabd;
-  border-radius: 8px;
-  background: #fff;
-  color: #fff;
-  transition: background 0.2s, border-color 0.2s, transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
-}
-.tarefa-feita .caixa {
-  border-color: #16a34a;
-  background: #16a34a;
-  transform: scale(1.08);
-}
-/* o "visto" se desenha ao marcar */
-.caixa :deep(.traco-check) {
-  stroke-dasharray: 24;
-  stroke-dashoffset: 24;
-  transition: stroke-dashoffset 0.3s ease 0.05s;
-}
-.tarefa-feita .caixa :deep(.traco-check) {
-  stroke-dashoffset: 0;
-}
-.tarefa-texto {
-  display: grid;
-  gap: 3px;
-}
-.tarefa-texto strong {
-  font-size: 15px;
-  font-weight: 700;
-  transition: color 0.2s;
-}
-.tarefa-feita .tarefa-texto strong {
-  color: #0f5a2c;
-  text-decoration: line-through;
-  text-decoration-color: #86c99e;
-}
-.tarefa-texto span {
-  color: #4b5d52;
-  font-size: 14px;
-  line-height: 1.4;
+  font-size: 18px;
 }
 
 /* ---------- BOTÕES ---------- */
