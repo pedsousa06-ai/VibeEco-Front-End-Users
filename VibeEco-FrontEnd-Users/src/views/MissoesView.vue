@@ -46,7 +46,7 @@ const cartoes = computed(() =>
       resumo: m.descricao_missao,
       categorias: (m.categoria ?? []).map((c) => c.nome_categoria),
       dificuldade: m.nome_dificuldade ?? '',
-      mc: m.cois_missao,
+      mc: m.coins_missao,
       prazo: m.prazo_dias,
     },
     status: STATUS[m.status_missao] ?? 'disponivel',

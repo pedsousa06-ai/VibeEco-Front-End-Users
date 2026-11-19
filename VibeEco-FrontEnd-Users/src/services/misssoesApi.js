@@ -13,4 +13,5 @@ export async function listarMissoes(filtro = 'todas') {
     const rota = ROTAS[filtro]
     if (!rota) throw new Error('Filtro inválido.')
     const dados = await apiGet(`/missoes/${rota}/${idDoUsuario()}`)
+  return dados.response.missoes ?? []
 }

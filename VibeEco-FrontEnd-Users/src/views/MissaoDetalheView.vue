@@ -204,7 +204,7 @@ const classeDificuldade = (d) => d.trim().toLowerCase().normalize('NFD').replace
     <ConfirmarModal
       :aberto="confirmando"
       titulo="Participar desta missão"
-      :texto="`Você tem certeza que deseja participar da missão “${missaoParaParticipar?.titulo}”?`"
+      :texto="`Você tem certeza que deseja participar da missão “${missao.titulo}”?`"
       rotulo-confirmar="Sim, participar"
       :carregando="enviando"
       :erro="erroParticipar"
