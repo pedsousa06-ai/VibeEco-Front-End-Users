@@ -1,11 +1,14 @@
 <script setup>
-import { computed, reactive, ref } from 'vue';
-import { usuario } from '@/services/usuario'; 
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { usuario } from '@/services/usuario';
 import Interruptor from '@/components/Interruptor.vue';
-import { configuracoes } from '@/services/configuracoes';
+import { carregarConfiguracoes, configuracoes } from '@/services/configuracoes';
+import { idDoUsuario } from '@/services/sessao';
 import Icone from '@/components/Icone.vue';
-import { PERIODOS, obterDesempenho, obterEvolucaoXp, CONQUISTAS, TOTAL_EMBLEMA } from '@/services/perfil';
-import { missoesLista, statusDe, progressoDe, xpTotal, rotuloPrazo } from '@/services/missoes';
+import {
+    PERIODOS, carregarPerfil, salvarPerfil, mensagemDeErroSalvar, obterDesempenho,
+    listarMissoesDoPerfil, rotuloPrazoMissao,
+} from '@/services/perfil';
 
 const ABAS =[
     { valor: 'todas', rotulo: 'Todas' },
@@ -16,20 +19,52 @@ const ABAS =[
 
 const aba = ref('todas')
 
+// ---------- Dados vindos da API ----------
+const perfil = ref(null)          // desempenho, ranking, evolução e conquistas
+const missoes = ref([])
+const carregando = ref(true)
+const erro = ref('')
+const erroMissoes = ref('')
+
+async function carregar() {
+    carregando.value = true
+    erro.value = ''
+    try {
+        perfil.value = await carregarPerfil()
+        Object.assign(form, dadosAtuais()) // o usuário compartilhado acabou de ser preenchido
+        carregarConfiguracoes(idDoUsuario()) // interruptores de visibilidade (já trata o próprio erro)
+    } catch (e) {
+        erro.value = 'Não foi possível carregar o perfil. Tente novamente.'
+        if (import.meta.env.DEV) console.error(e)
+    } finally {
+        carregando.value = false
+    }
+    // as missões carregam à parte: se falharem, o resto do perfil continua visível
+    erroMissoes.value = ''
+    try {
+        missoes.value = await listarMissoesDoPerfil()
+    } catch (e) {
+        erroMissoes.value = 'Não foi possível carregar as missões.'
+        if (import.meta.env.DEV) console.error(e)
+    }
+}
+
+onMounted(carregar)
+
 function contar(valor) {
-    if(valor === 'todas') return missoesLista.length
-    return missoesLista.filter((m) => statusDe(m) === valor).length
+    if(valor === 'todas') return missoes.value.length
+    return missoes.value.filter((m) => m.status === valor).length
 }
 
 const missoesFiltradas = computed (() =>
-    aba.value === 'todas' ? missoesLista : missoesLista.filter((m) => statusDe(m) === aba.value),
+    aba.value === 'todas' ? missoes.value : missoes.value.filter((m) => m.status === aba.value),
 )
 
 const ROTULO_BOTAO = { andamento: 'Continuar', disponivel: 'Começar', concluida: 'Ver detalhes' }
 const CLASSE_DIF = { 'Fácil': 'facil', 'Médio': 'medio', 'Difícil': 'dificil'}
 
 const periodo = ref('30')
-const cartoes = computed(() => obterDesempenho(periodo.value))
+const cartoes = computed(() => (perfil.value ? obterDesempenho(perfil.value, usuario, periodo.value) : []))
 const periodoRotulo = computed(() => PERIODOS.find((p) => p.valor === periodo.value)?.rotulo)
 
 
@@ -46,16 +81,25 @@ const completo = computed (() => {
     return Math.round((preenchidos / campos.length) * 100)
 })
 
+// campos que ainda faltam, para a mensagem do anel de progresso
+const NOMES_CAMPOS = {
+    nomePublico: 'nome público', matricula: 'matrícula', curso: 'curso',
+    localizacao: 'localização', bio: 'bio', foto: 'foto',
+}
+const faltando = computed(() =>
+    Object.keys(NOMES_CAMPOS).filter((c) => String(usuario[c] ?? '').trim() === '').map((c) => NOMES_CAMPOS[c]),
+)
+
 const CIRCUNFERENCIA = 2 * Math.PI * 34 // raio 34, igual ao do SVG
 const traco = computed(() => `${(completo.value / 100) * CIRCUNFERENCIA} ${CIRCUNFERENCIA}`)
 
 function dadosAtuais(){
     return {
-        nome: usuario.nome,
-        nomePublico: usuario.nomePublico,
-        curso: usuario.curso,
-        localizacao: usuario.localizacao,
-        bio: usuario.bio
+        nome: usuario.nome ?? '',
+        nomePublico: usuario.nomePublico ?? '',
+        curso: usuario.curso ?? '',
+        localizacao: usuario.localizacao ?? '',
+        bio: usuario.bio ?? ''
     }
 }
 
@@ -66,22 +110,34 @@ const alterado = computed(() => JSON.stringify(form) !== JSON.stringify(dadosAtu
 const valido = computed(() => form.nome.trim() !== '')
 
 const salvo = ref(false)
+const salvando = ref(false)
+const erroSalvar = ref('')
 let timer
 
-function salvar() {
-    if(!valido.value) return
-    Object.assign(usuario, form) // copia o rascunho para o usuário
-    salvo.value = true
-    clearTimeout(timer)
-    timer = setTimeout(() => (salvo.value = false), 3000)
+async function salvar() {
+    if(!valido.value || salvando.value) return
+    salvando.value = true
+    erroSalvar.value = ''
+    try {
+        await salvarPerfil(form) // a API grava e atualiza o usuário compartilhado
+        Object.assign(form, dadosAtuais())
+        salvo.value = true
+        clearTimeout(timer)
+        timer = setTimeout(() => (salvo.value = false), 3000)
+    } catch (e) {
+        erroSalvar.value = mensagemDeErroSalvar(e)
+        if (import.meta.env.DEV) console.error(e)
+    } finally {
+        salvando.value = false
+    }
 }
 
 function cancelar() {
-    Object.assign(form, dadosAtuais()) // volta o rascunho ao que está salvo 
+    Object.assign(form, dadosAtuais()) // volta o rascunho ao que está salvo
+    erroSalvar.value = ''
 }
 
-const evolucao = obterEvolucaoXp()
-const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
+onBeforeUnmount(() => clearTimeout(timer))
 
 </script>
 
@@ -91,18 +147,27 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
             <h2>Dados e progresso do perfil</h2>
             <p>Gerencie suas informações, acompanhe sua evolução e celebre cada impacto positivo.</p>
         </div>
-        <small>Dados atualizados agora</small>
+        <small v-if="perfil">Dados atualizados agora</small>
     </header>
 
+    <p v-if="carregando" class="aviso-carga" role="status">Carregando perfil…</p>
+    <div v-else-if="erro" class="aviso-erro" role="alert">
+        <span>{{ erro }}</span>
+        <button type="button" class="botao-sec" @click="carregar">Tentar novamente</button>
+    </div>
+
+    <template v-if="perfil">
+
     <section class="card identidade" aria-label="Resumo do perfil">
-        <span class="avatar-perfil" aria-hidden="true">{{ usuario.iniciais }}</span>
+        <img v-if="usuario.foto" class="avatar-perfil" :src="usuario.foto" alt="" />
+        <span v-else class="avatar-perfil" aria-hidden="true">{{ usuario.iniciais }}</span>
         <div class="id-dados">
             <h3>{{ usuario.nome }}</h3>
-            <p>{{ usuario.curso }} • {{ usuario.instituicao }}</p>
+            <p>{{ [usuario.curso, usuario.instituicao].filter(Boolean).join(' • ') }}</p>
             <ul class="selos">
-                <li>{{ usuario.nivel }}</li>
-                <li>{{ usuario.localizacao }}</li>
-                <li>Desde {{ usuario.desde }}</li>
+                <li v-if="usuario.nivel">{{ usuario.nivel }}</li>
+                <li v-if="usuario.localizacao">{{ usuario.localizacao }}</li>
+                <li v-if="usuario.desde">Desde {{ usuario.desde }}</li>
             </ul>
         </div>
 
@@ -116,7 +181,7 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
             </div>
             <div v-if="completo < 100">
                 <strong>Seu perfil está quase pronto</strong>
-                <p>Adicione uma foto para chegar a 100% e ganhar 50 XP.</p>
+                <p>Falta preencher: {{ faltando.join(', ') }}.</p>
             </div>
             <div v-else>
                 <strong>Perfil completo!</strong>
@@ -134,12 +199,12 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
             <form class="form" @submit.prevent="salvar">
                 <div class="campo">
                     <label for="nome">Nome completo</label>
-                    <input id="nome" v-model="form.nome" type="text" required>
+                    <input id="nome" v-model="form.nome" type="text" maxlength="100" required>
                 </div>  
 
                 <div class="campo">
                     <label for="publico">Nome público</label>
-                     <input id="publico" v-model="form.nomePublico" type="text" />
+                     <input id="publico" v-model="form.nomePublico" type="text" maxlength="50" />
                     <small>Usado no ranking e nas interações.</small>
                 </div>
 
@@ -150,16 +215,16 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
 
                 <div class="campo">
                     <label for="matricula">Matrícula <span>Não editável</span></label>
-                     <input id="matricula" :value="usuario.matricula" type="text" disabled />
+                     <input id="matricula" :value="usuario.matricula || '—'" type="text" disabled />
                 </div>
 
                 <div class="campo">
                     <label for="curso">Curso</label>
-                     <input id="curso" v-model="form.curso" type="text" />
+                     <input id="curso" v-model="form.curso" type="text" maxlength="100" />
                 </div>
                 <div class="campo">
                     <label for="local">Localização</label>
-                    <input id="local" v-model="form.localizacao" type="text">
+                    <input id="local" v-model="form.localizacao" type="text" maxlength="100">
                 </div>
 
                 <div class="campo largo">
@@ -170,8 +235,9 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
 
                 <div class="acoes largo">
                     <p v-if="salvo" role="status" class="ok">Perfil atualizado</p>
-                    <button type="button" class="botao-sec" @click="cancelar" :disabled="!alterado">Cancelar</button>
-                    <button type="submit" class="botao-pri" :disabled="!alterado || !valido">Salvar alterações</button>
+                    <p v-if="erroSalvar" role="alert" class="erro-salvar">{{ erroSalvar }}</p>
+                    <button type="button" class="botao-sec" @click="cancelar" :disabled="!alterado || salvando">Cancelar</button>
+                    <button type="submit" class="botao-pri" :disabled="!alterado || !valido || salvando">{{ salvando ? 'Salvando…' : 'Salvar alterações' }}</button>
                 </div>
             </form>
         </section>
@@ -237,19 +303,20 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
                         <h3>Evolução de XP</h3>
                         <p>Pontuação conquistada nas últimas 12 semanas</p>
                     </div>
-                    <span class="variacao">{{ evolucao.variacao }}</span>
+                    <span class="variacao">{{ perfil.evolucao.variacao }}</span>
                 </header>
 
-                <ol class="barras" aria-label="XP conquistado por semana">
+                <p v-if="!perfil.evolucao.temDados" class="vazio-card">Você ainda não ganhou XP nas últimas 12 semanas.</p>
+                <ol v-else class="barras" aria-label="XP conquistado por semana">
                     <li
-                    v-for="(s, i) in evolucao.semanas"
+                    v-for="(s, i) in perfil.evolucao.semanas"
                     :key="s.semana"
                     class="barra-item"
                     :aria-label="`Semana ${s.semana}: ${s.xp} XP`"
                     >
                         <span
                         class="barra-xp"
-                        :class="{ atual: i === evolucao.semanas.length - 1 }"
+                        :class="{ atual: i === perfil.evolucao.semanas.length - 1 }"
                         :style="{ height: s.altura + '%' }"
                         :title="`${s.xp} XP`"
                         ></span> 
@@ -262,12 +329,13 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
                 <header class="grafico-cab">
                     <div>
                         <h3>Conquistas recentes</h3>
-                        <p>{{ desbloqueadas }} de {{ TOTAL_EMBLEMA }} emblemas desbloqueados</p>
+                        <p>{{ perfil.conquistas.desbloqueadas }} de {{ perfil.conquistas.total }} emblemas desbloqueados</p>
                     </div>
                 </header>
 
-                <ul class="lista-conq">
-                    <li v-for="c in CONQUISTAS" :key="c.id" class="conq" :class="{ bloqueada: !c.desbloqueada}">
+                <p v-if="!perfil.conquistas.lista.length" class="vazio-card">Nenhuma conquista cadastrada ainda.</p>
+                <ul v-else class="lista-conq">
+                    <li v-for="c in perfil.conquistas.lista" :key="c.id" class="conq" :class="{ bloqueada: !c.desbloqueada}">
                         <span class="conq-icone" :class="'tom-' + c.tom"><Icone :nome="c.icone" :tamanho="18"/></span>  
                         <div>
                             <strong>{{ c.titulo }}</strong>
@@ -301,11 +369,12 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
             </div>
         </div>
 
+        <p v-if="erroMissoes" class="aviso-erro" role="alert">{{ erroMissoes }}</p>
         <div class="missoes-grade">
             <article v-for="m in missoesFiltradas" :key="m.id" class="card missao">
                 <div class="missao-tags">
-                    <span class="tag-cat">{{ m.categoria }}</span>
-                    <span class="tag-dif" :class="'dif-' + CLASSE_DIF[m.dificuldade]">{{ m.dificuldade }}</span>
+                    <span v-if="m.categoria" class="tag-cat">{{ m.categoria }}</span>
+                    <span v-if="m.dificuldade" class="tag-dif" :class="'dif-' + CLASSE_DIF[m.dificuldade]">{{ m.dificuldade }}</span>
                 </div>
 
                 <h3>{{ m.titulo }}</h3>
@@ -313,34 +382,35 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
 
                 <div class="prog-linha">
                     <span>Progresso</span>
-                    <span>{{ progressoDe(m) }}%</span>
+                    <span>{{ m.progresso }}%</span>
                 </div>
                 <div
                 class="prog-trilho"
                 role="progressbar"
-                :aria-valuenow="progressoDe(m)"
+                :aria-valuenow="m.progresso"
                 aria-valuemin="0"
                 aria-valuemax="100"
                 :aria-label="`Progresso de ${m.titulo}`"
                 >
-                    <span class="prog-preench" :style="{ width: progressoDe(m) + '%'}"></span>
+                    <span class="prog-preench" :style="{ width: m.progresso + '%'}"></span>
                 </div>
 
                 <div class="missao-meta">
                     <div class="missao-ganho">
-                        <span class="meta-xp">★ {{ xpTotal(m) }} XP</span>
+                        <span class="meta-xp">★ {{ m.xp }} XP</span>
                         <span class="meta-mc">{{ m.mc }} MC</span>
                     </div>
-                    <span v-if="m.prazo" class="meta-prazo">{{ rotuloPrazo(m.prazo) }}</span>
+                    <span v-if="m.prazo != null" class="meta-prazo">{{ rotuloPrazoMissao(m.prazo) }}</span>
                 </div>
 
                 <RouterLink :to="`/missoes/${m.id}`" class="botao-pri botao-cheio">
-                    {{ ROTULO_BOTAO[statusDe(m)] }}
+                    {{ ROTULO_BOTAO[m.status] }}
                 </RouterLink>
             </article>
         </div>
-        <p v-if="!missoesFiltradas.length" class="vazio">Nenhuma missão nesta aba.</p>
+        <p v-if="!missoesFiltradas.length && !erroMissoes" class="vazio">Nenhuma missão nesta aba.</p>
     </section>
+    </template>
 </template>
 
 <style scoped>
@@ -864,6 +934,27 @@ const desbloqueadas = CONQUISTAS.filter((c) => c.desbloqueada).length
     margin-top: auto;
     text-decoration: none;
 }
+
+.avatar-perfil { object-fit: cover; }
+
+.aviso-carga { margin: 24px 0; text-align: center; color: var(--texto-suave); }
+
+.aviso-erro {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 16px;
+    padding: 12px 16px;
+    border: 1px solid rgba(238, 51, 51, 0.35);
+    border-radius: 12px;
+    background: rgba(238, 51, 51, 0.08);
+    color: #b91c1c;
+    font-size: 13.5px;
+}
+
+.erro-salvar { margin: 0 auto 0 0; color: #b91c1c; font-size: 13px; font-weight: 600; }
+.vazio-card { margin: 24px 0; text-align: center; color: var(--texto-suave); font-size: 13px; }
 
 .tom-laranja { background: rgba(232, 89, 12, 0.14); color: #e8590c; }
 .tom-verde { background: var(--verde-100); color: var(--verde-700); }
