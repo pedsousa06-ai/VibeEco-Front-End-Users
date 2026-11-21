@@ -38,8 +38,18 @@ export function desdeDe(data) {
 export async function carregarPerfil() {
     const dados = await apiGet(`/perfil/${idDoUsuario()}`)
     const p = dados.response.perfil
-    const u = p.usuario
+    sincronizarUsuario(p.usuario)
 
+    return {
+        desempenho: p.desempenho,
+        ranking: p.ranking,
+        evolucao: montarEvolucao(p.evolucao_xp),
+        conquistas: montarConquistas(p.conquistas),
+    }
+}
+
+// Preenche o usuário compartilhado (menu lateral, barra do topo e telas) com os dados reais.
+export function sincronizarUsuario(u) {
     Object.assign(usuario, {
         id: u.id,
         nome: u.nome,
@@ -58,13 +68,12 @@ export async function carregarPerfil() {
         desde: desdeDe(u.data_cadastro),
         bio: u.bio,
     })
+}
 
-    return {
-        desempenho: p.desempenho,
-        ranking: p.ranking,
-        evolucao: montarEvolucao(p.evolucao_xp),
-        conquistas: montarConquistas(p.conquistas),
-    }
+// Usado pelo layout ao abrir o app: só traz os dados do usuário logado
+export async function carregarUsuarioLogado() {
+    const dados = await apiGet(`/perfil/${idDoUsuario()}`)
+    sincronizarUsuario(dados.response.perfil.usuario)
 }
 
 /* ---------- Salvar ---------- */

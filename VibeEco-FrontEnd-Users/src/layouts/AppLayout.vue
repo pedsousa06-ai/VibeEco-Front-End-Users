@@ -4,6 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import Icone from '@/components/Icone.vue'
 import { sair } from '@/services/auth'
 import { usuario } from '@/services/usuario'
+import { carregarUsuarioLogado } from '@/services/perfil'
+import { carregarNotificacoes, naoLidas } from '@/services/notificacoes'
 
 const route = useRoute()
 const router = useRouter()
@@ -34,7 +36,16 @@ watch(() => route.fullPath, () => (menuAberto.value = false))
 function aoApertarTecla(e) {
   if (e.key === 'Escape') menuAberto.value = false
 }
-onMounted(() => window.addEventListener('keydown', aoApertarTecla))
+onMounted(async () => {
+  window.addEventListener('keydown', aoApertarTecla)
+  // dados reais do usuário (nome, nível, XP, moedas) e contador de notificações não lidas
+  try {
+    await carregarUsuarioLogado()
+    await carregarNotificacoes(usuario.id)
+  } catch (e) {
+    if (import.meta.env.DEV) console.error(e)
+  }
+})
 onBeforeUnmount(() => window.removeEventListener('keydown', aoApertarTecla))
 
 function deslogar() {
@@ -62,8 +73,8 @@ function deslogar() {
         <RouterLink v-for="item in menu" :key="item.to" :to="item.to" class="menu-item" :class="{ ativo: estaAtivo(item.to) }">
           <Icone :nome="item.icone" :tamanho="20" />
           <span>{{ item.nome }}</span>
-          <span v-if="item.selo && usuario.notificacoes" class="selo" :aria-label="`${usuario.notificacoes} novas`">
-            {{ usuario.notificacoes }}
+          <span v-if="item.selo && naoLidas" class="selo" :aria-label="`${naoLidas} novas`">
+            {{ naoLidas }}
           </span>
         </RouterLink>
       </nav>
@@ -111,7 +122,7 @@ function deslogar() {
 
           <RouterLink to="/notificacoes" class="sino" aria-label="Notificações">
             <Icone nome="sino" :tamanho="20" />
-            <span v-if="usuario.notificacoes" class="sino-ponto"></span>
+            <span v-if="naoLidas" class="sino-ponto"></span>
           </RouterLink>
 
           <span class="avatar" aria-hidden="true">{{ usuario.iniciais }}</span>
