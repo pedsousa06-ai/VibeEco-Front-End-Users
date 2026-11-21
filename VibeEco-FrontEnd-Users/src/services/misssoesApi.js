@@ -1,17 +1,21 @@
-import { apiGet } from '@/services/api'
-import { idDoUsuario } from '@/services/sessao'
+import { apiGet } from './api'
+import { idDoUsuario } from './sessao'
 
-// lista fixa: o caminho da URL nunca vem de texto digitado por alguém
+// Mapeamento das rotas do seu backend
 const ROTAS = {
   todas: 'todasmissoes',
   disponivel: 'missoesDisponiveis',
   andamento: 'missoesAndamento',
-  concluida: 'missoesConcluidas',
+  concluida: 'missoesConcluidas'
 }
 
 export async function listarMissoes(filtro = 'todas') {
-    const rota = ROTAS[filtro]
-    if (!rota) throw new Error('Filtro inválido.')
-    const dados = await apiGet(`/missoes/${rota}/${idDoUsuario()}`)
+  const rota = ROTAS[filtro]
+  if (!rota) throw new Error('Filtro inválido.')
+
+  // Chama a API do backend (ex: /missoes/todasmissoes/1)
+  const dados = await apiGet(`/missoes/${rota}/${idDoUsuario()}`)
+  
+  // Retorna o array de missões
   return dados.response.missoes ?? []
 }

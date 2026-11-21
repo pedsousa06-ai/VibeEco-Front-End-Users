@@ -101,8 +101,8 @@ async function entrar(desafio) {
   erroAcao.value = ''
   try {
     await participar(desafio)
-    // leva direto para o desafio
-    router.push({ name: 'desafio-detalhe', params: { id: desafio.id } })
+    // REDIRECIONAR PARA A TELA DE INÍCIO AQUI:
+    router.push('/inicio')
   } catch (e) {
     falhou(e, 'Não foi possível entrar no desafio. Tente novamente.')
   } finally {

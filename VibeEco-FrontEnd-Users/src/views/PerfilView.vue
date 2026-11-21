@@ -26,6 +26,17 @@ const carregando = ref(true)
 const erro = ref('')
 const erroMissoes = ref('')
 
+// ---------- Correção do Avatar ----------
+const imagemQuebrada = ref(false)
+
+const iniciais = computed(() => {
+    const nome = usuario.nome || ''
+    if (!nome.trim()) return '?'
+    const partes = nome.trim().split(' ')
+    if (partes.length === 1) return partes[0].charAt(0).toUpperCase()
+    return (partes[0].charAt(0) + partes[partes.length - 1].charAt(0)).toUpperCase()
+})
+
 async function carregar() {
     carregando.value = true
     erro.value = ''
@@ -159,8 +170,16 @@ onBeforeUnmount(() => clearTimeout(timer))
     <template v-if="perfil">
 
     <section class="card identidade" aria-label="Resumo do perfil">
-        <img v-if="usuario.foto" class="avatar-perfil" :src="usuario.foto" alt="" />
-        <span v-else class="avatar-perfil" aria-hidden="true">{{ usuario.iniciais }}</span>
+        <!-- Correção do Avatar: tentar imagem, se falhar (ou não existir), cai no fallback das iniciais -->
+        <img 
+            v-if="usuario.foto && !imagemQuebrada" 
+            class="avatar-perfil" 
+            :src="usuario.foto" 
+            alt="" 
+            @error="imagemQuebrada = true"
+        />
+        <span v-else class="avatar-perfil" aria-hidden="true">{{ iniciais }}</span>
+        
         <div class="id-dados">
             <h3>{{ usuario.nome }}</h3>
             <p>{{ [usuario.curso, usuario.instituicao].filter(Boolean).join(' • ') }}</p>

@@ -1,26 +1,20 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import DesafioIcone from '@/components/DesafioIcone.vue'
-import ConfirmarAbandono from '@/components/ConfirmarAbandono.vue' // Import do Modal
+import ConfirmarAbandono from '@/components/ConfirmarAbandono.vue'
 import {
-  DIFICULDADES,
-  ESCOPOS,
-  abandonar,
-  carregarDesafio,
-  concluirDesafio as concluirNaApi,
-  mensagemDeErro,
-  participar,
-  rotuloPrazo,
+  DIFICULDADES, ESCOPOS, abandonar, carregarDesafio,
+  concluirDesafio as concluirNaApi, mensagemDeErro, participar, rotuloPrazo,
 } from '@/services/desafios'
 
 const route = useRoute()
+const router = useRouter()
 
-// ---------- DADOS (vêm da API) ----------
 const desafio = ref(null)
 const carregando = ref(true)
 const erro = ref('')
-const requisicao = ref(0) // descarta resposta atrasada se o usuário trocar de desafio rápido
+const requisicao = ref(0)
 
 async function carregar() {
   const minha = ++requisicao.value
@@ -46,20 +40,17 @@ const progresso = computed(() => desafio.value?.progresso ?? 0)
 const terminou = computed(() => Boolean(desafio.value?.concluido))
 const moedasGanhas = ref(0)
 
-// anel de progresso (círculo de raio 52)
 const CIRCUNFERENCIA = 2 * Math.PI * 52
 const deslocamento = computed(() => CIRCUNFERENCIA * (1 - progresso.value / 100))
 
-// Sem meta cadastrada não há porcentagem de participação
 const participacao = computed(() => {
   const d = desafio.value
   if (!d || !d.meta) return 0
   return Math.min(100, Math.round((d.participantes / d.meta) * 100))
 })
 
-// ---------- AÇÕES ----------
 const erroAcao = ref('')
-const enviando = ref(false) // trava cliques repetidos
+const enviando = ref(false)
 
 async function executar(acao, mensagemPadrao) {
   if (enviando.value || !desafio.value) return false
@@ -70,7 +61,7 @@ async function executar(acao, mensagemPadrao) {
     return true
   } catch (e) {
     erroAcao.value = mensagemDeErro(e, mensagemPadrao)
-    if (e?.status === 409) carregar() // a situação mudou no servidor (ex.: prazo acabou)
+    if (e?.status === 409) carregar()
     if (import.meta.env.DEV) console.error(e)
     return false
   } finally {
@@ -78,12 +69,8 @@ async function executar(acao, mensagemPadrao) {
   }
 }
 
-// --- CONTROLE DO MODAL DE ABANDONO ---
 const modalAbandonoAberto = ref(false)
-
-function tentarAbandonar() {
-  modalAbandonoAberto.value = true
-}
+function tentarAbandonar() { modalAbandonoAberto.value = true }
 
 async function confirmarAbandono() {
   await executar(() => abandonar(desafio.value), 'Não foi possível abandonar o desafio. Tente novamente.')
@@ -91,10 +78,12 @@ async function confirmarAbandono() {
 }
 
 function entrar() {
-  executar(() => participar(desafio.value), 'Não foi possível entrar no desafio. Tente novamente.')
+  executar(async () => {
+    await participar(desafio.value)
+    router.push('/inicio')
+  }, 'Não foi possível entrar no desafio. Tente novamente.')
 }
 
-// --- AÇÃO DE CONCLUIR DESAFIO ---
 function concluirDesafio() {
   executar(async () => {
     moedasGanhas.value = await concluirNaApi(desafio.value)
@@ -109,18 +98,15 @@ function concluirDesafio() {
       Voltar para desafios
     </RouterLink>
 
-    <!-- CARREGANDO -->
     <div v-if="carregando" class="vazio entrada" role="status">
       <strong>Carregando desafio...</strong>
     </div>
 
-    <!-- ERRO AO CARREGAR -->
     <div v-else-if="erro" class="vazio entrada" role="alert">
       <strong>{{ erro }}</strong>
       <button type="button" class="botao" @click="carregar">Tentar novamente</button>
     </div>
 
-    <!-- NÃO ENCONTRADO -->
     <div v-else-if="!desafio" class="vazio entrada">
       <strong>Desafio não encontrado</strong>
       <p>Ele pode ter sido removido. Volte à lista para ver os desafios disponíveis.</p>
@@ -130,7 +116,6 @@ function concluirDesafio() {
     <template v-else>
       <p v-if="erroAcao" class="aviso-erro entrada" role="alert">{{ erroAcao }}</p>
 
-      <!-- CABEÇALHO -->
       <header class="hero entrada" :style="{ '--cor': desafio.cor, '--i': 1 }">
         <span class="faixa" aria-hidden="true"></span>
 
@@ -138,13 +123,7 @@ function concluirDesafio() {
           <div class="tags">
             <span v-for="categoria in desafio.categorias" :key="categoria" class="tag tag-categoria">{{ categoria }}</span>
             <span class="tag tag-escopo">{{ ESCOPOS[desafio.escopo] }}</span>
-            <span
-              class="tag"
-              :style="{
-                background: DIFICULDADES[desafio.dificuldade].fundo,
-                color: DIFICULDADES[desafio.dificuldade].texto,
-              }"
-            >
+            <span class="tag" :style="{ background: DIFICULDADES[desafio.dificuldade].fundo, color: DIFICULDADES[desafio.dificuldade].texto }">
               {{ DIFICULDADES[desafio.dificuldade].rotulo }}
             </span>
           </div>
@@ -162,32 +141,15 @@ function concluirDesafio() {
             </span>
           </div>
 
-          <div
-            v-if="desafio.meta"
-            class="trilho"
-            role="progressbar"
-            :aria-valuenow="participacao"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            aria-label="Participação"
-          >
+          <div v-if="desafio.meta" class="trilho" role="progressbar" :aria-valuenow="participacao" aria-valuemin="0" aria-valuemax="100" aria-label="Participação">
             <div class="preenchido" :style="{ width: participacao + '%' }"></div>
           </div>
         </div>
 
-        <!-- ANEL DE PROGRESSO -->
         <div class="anel" :class="{ 'anel-completo': terminou }">
           <svg viewBox="0 0 120 120" width="132" height="132" role="img" :aria-label="`Seu progresso: ${progresso}%`">
             <circle class="anel-fundo" cx="60" cy="60" r="52" />
-            <circle
-              class="anel-valor"
-              cx="60"
-              cy="60"
-              r="52"
-              :stroke-dasharray="CIRCUNFERENCIA"
-              :stroke-dashoffset="deslocamento"
-              transform="rotate(-90 60 60)"
-            />
+            <circle class="anel-valor" cx="60" cy="60" r="52" :stroke-dasharray="CIRCUNFERENCIA" :stroke-dashoffset="deslocamento" transform="rotate(-90 60 60)" />
           </svg>
           <div class="anel-texto">
             <strong>{{ progresso }}%</strong>
@@ -196,7 +158,6 @@ function concluirDesafio() {
         </div>
       </header>
 
-      <!-- CONCLUSÃO -->
       <section class="tarefas entrada" :style="{ '--i': 2 }" aria-labelledby="titulo-tarefas">
         <div class="tarefas-topo" style="justify-content: center; text-align: center; margin-bottom: 8px;">
           <h3 id="titulo-tarefas">Você cumpriu este desafio?</h3>
@@ -204,11 +165,7 @@ function concluirDesafio() {
 
         <Transition name="aviso">
           <p v-if="!desafio.participando && !terminou" class="aviso" style="text-align: center;">
-            {{
-              desafio.encerrado
-                ? 'O prazo deste desafio já acabou.'
-                : 'Participe do desafio para poder marcá-lo como concluído.'
-            }}
+            {{ desafio.encerrado ? 'O prazo deste desafio já acabou.' : 'Participe do desafio para poder marcá-lo como concluído.' }}
           </p>
         </Transition>
 
@@ -221,7 +178,6 @@ function concluirDesafio() {
           </div>
         </Transition>
 
-        <!-- BOTÃO DE CONCLUIR DIRETO -->
         <div v-if="desafio.participando && !terminou" class="acao" style="margin-top: 8px;">
           <button type="button" class="botao" :disabled="enviando" @click="concluirDesafio">
             {{ enviando ? 'Salvando...' : 'Sim, cumpri o desafio' }}
@@ -229,7 +185,6 @@ function concluirDesafio() {
         </div>
       </section>
 
-      <!-- AÇÃO SECUNDÁRIA (Abandonar / Participar) -->
       <div v-if="!terminou" class="acao entrada" :style="{ '--i': 4 }">
         <button v-if="desafio.participando" type="button" class="botao botao-suave" :disabled="enviando" @click="tentarAbandonar">
           Abandonar desafio
@@ -241,7 +196,6 @@ function concluirDesafio() {
       </div>
     </template>
 
-    <!-- MODAL DE CONFIRMAÇÃO -->
     <ConfirmarAbandono
       v-if="modalAbandonoAberto"
       @confirmar="confirmarAbandono"
@@ -251,7 +205,6 @@ function concluirDesafio() {
 </template>
 
 <style scoped>
-/* O CSS continua exatamente o mesmo, pois as classes de layout se mantêm */
 .pagina {
   display: grid;
   gap: 20px;
@@ -286,7 +239,6 @@ function concluirDesafio() {
   border-radius: 6px;
 }
 
-/* ---------- CABEÇALHO ---------- */
 .hero {
   position: relative;
   display: flex;
@@ -356,13 +308,6 @@ function concluirDesafio() {
   align-items: center;
   gap: 6px;
 }
-.fatos .xp {
-  color: #92400e;
-  font-weight: 700;
-}
-.fatos .xp svg {
-  color: #f59e0b;
-}
 .fatos .mc {
   color: #15803d;
   font-weight: 700;
@@ -384,7 +329,6 @@ function concluirDesafio() {
   animation: crescer 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s backwards;
 }
 
-/* ---------- ANEL ---------- */
 .anel {
   position: relative;
   display: grid;
@@ -425,7 +369,6 @@ function concluirDesafio() {
   font-size: 12px;
 }
 
-/* ---------- TAREFAS ---------- */
 .tarefas {
   display: grid;
   gap: 14px;
@@ -467,7 +410,6 @@ function concluirDesafio() {
   font-size: 18px;
 }
 
-/* ---------- BOTÕES ---------- */
 .acao {
   display: grid;
 }
@@ -529,7 +471,6 @@ function concluirDesafio() {
   padding: 12px 20px;
 }
 
-/* ---------- ANIMAÇÕES ---------- */
 .entrada {
   animation: entrar 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
   animation-delay: calc(var(--i, 0) * 60ms);
@@ -573,7 +514,6 @@ function concluirDesafio() {
   }
 }
 
-/* ---------- ESTADOS: ERRO E BOTÃO DESABILITADO ---------- */
 .aviso-erro {
   margin: 0;
   padding: 10px 14px;
