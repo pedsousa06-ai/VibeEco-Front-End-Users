@@ -1,33 +1,82 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import DesafioIcone from '@/components/DesafioIcone.vue'
 import ConfirmarAbandono from '@/components/ConfirmarAbandono.vue' // Import do Modal
 import {
-  CATEGORIAS,
   DIFICULDADES,
   ESCOPOS,
   abandonar,
-  buscarDesafio,
-  concluido,
+  carregarDesafio,
+  concluirDesafio as concluirNaApi,
+  mensagemDeErro,
   participar,
-  progressoDe,
-  rotuloDias,
+  rotuloPrazo,
 } from '@/services/desafios'
 
 const route = useRoute()
-const desafio = computed(() => buscarDesafio(route.params.id))
 
-const progresso = computed(() => (desafio.value ? progressoDe(desafio.value) : 0))
-const terminou = computed(() => (desafio.value ? concluido(desafio.value) : false))
+// ---------- DADOS (vêm da API) ----------
+const desafio = ref(null)
+const carregando = ref(true)
+const erro = ref('')
+const requisicao = ref(0) // descarta resposta atrasada se o usuário trocar de desafio rápido
+
+async function carregar() {
+  const minha = ++requisicao.value
+  carregando.value = true
+  erro.value = ''
+  try {
+    const resultado = await carregarDesafio(route.params.id)
+    if (minha === requisicao.value) desafio.value = resultado
+  } catch (e) {
+    if (minha === requisicao.value) {
+      desafio.value = null
+      erro.value = 'Não foi possível carregar o desafio. Tente novamente.'
+    }
+    if (import.meta.env.DEV) console.error(e)
+  } finally {
+    if (minha === requisicao.value) carregando.value = false
+  }
+}
+onMounted(carregar)
+watch(() => route.params.id, carregar)
+
+const progresso = computed(() => desafio.value?.progresso ?? 0)
+const terminou = computed(() => Boolean(desafio.value?.concluido))
+const moedasGanhas = ref(0)
 
 // anel de progresso (círculo de raio 52)
 const CIRCUNFERENCIA = 2 * Math.PI * 52
 const deslocamento = computed(() => CIRCUNFERENCIA * (1 - progresso.value / 100))
 
-const participacao = computed(() =>
-  desafio.value ? Math.min(100, Math.round((desafio.value.participantes / desafio.value.meta) * 100)) : 0,
-)
+// Sem meta cadastrada não há porcentagem de participação
+const participacao = computed(() => {
+  const d = desafio.value
+  if (!d || !d.meta) return 0
+  return Math.min(100, Math.round((d.participantes / d.meta) * 100))
+})
+
+// ---------- AÇÕES ----------
+const erroAcao = ref('')
+const enviando = ref(false) // trava cliques repetidos
+
+async function executar(acao, mensagemPadrao) {
+  if (enviando.value || !desafio.value) return false
+  enviando.value = true
+  erroAcao.value = ''
+  try {
+    await acao()
+    return true
+  } catch (e) {
+    erroAcao.value = mensagemDeErro(e, mensagemPadrao)
+    if (e?.status === 409) carregar() // a situação mudou no servidor (ex.: prazo acabou)
+    if (import.meta.env.DEV) console.error(e)
+    return false
+  } finally {
+    enviando.value = false
+  }
+}
 
 // --- CONTROLE DO MODAL DE ABANDONO ---
 const modalAbandonoAberto = ref(false)
@@ -36,22 +85,20 @@ function tentarAbandonar() {
   modalAbandonoAberto.value = true
 }
 
-function confirmarAbandono() {
-  if (desafio.value) {
-    abandonar(desafio.value)
-  }
+async function confirmarAbandono() {
+  await executar(() => abandonar(desafio.value), 'Não foi possível abandonar o desafio. Tente novamente.')
   modalAbandonoAberto.value = false
+}
+
+function entrar() {
+  executar(() => participar(desafio.value), 'Não foi possível entrar no desafio. Tente novamente.')
 }
 
 // --- AÇÃO DE CONCLUIR DESAFIO ---
 function concluirDesafio() {
-  // Se você tiver uma função no seu serviço 'desafios', chame ela aqui:
-  // ex: finalizarDesafio(desafio.value)
-  
-  if (desafio.value) {
-    desafio.value.tarefas.forEach(t => t.feita = true)
-    // ou desafio.value.concluido = true (depende da sua model)
-  }
+  executar(async () => {
+    moedasGanhas.value = await concluirNaApi(desafio.value)
+  }, 'Não foi possível concluir o desafio. Tente novamente.')
 }
 </script>
 
@@ -62,24 +109,34 @@ function concluirDesafio() {
       Voltar para desafios
     </RouterLink>
 
+    <!-- CARREGANDO -->
+    <div v-if="carregando" class="vazio entrada" role="status">
+      <strong>Carregando desafio...</strong>
+    </div>
+
+    <!-- ERRO AO CARREGAR -->
+    <div v-else-if="erro" class="vazio entrada" role="alert">
+      <strong>{{ erro }}</strong>
+      <button type="button" class="botao" @click="carregar">Tentar novamente</button>
+    </div>
+
     <!-- NÃO ENCONTRADO -->
-    <div v-if="!desafio" class="vazio entrada">
+    <div v-else-if="!desafio" class="vazio entrada">
       <strong>Desafio não encontrado</strong>
       <p>Ele pode ter sido removido. Volte à lista para ver os desafios disponíveis.</p>
       <RouterLink :to="{ name: 'desafios' }" class="botao">Ver desafios</RouterLink>
     </div>
 
     <template v-else>
+      <p v-if="erroAcao" class="aviso-erro entrada" role="alert">{{ erroAcao }}</p>
+
       <!-- CABEÇALHO -->
-      <header
-        class="hero entrada"
-        :style="{ '--cor': CATEGORIAS[desafio.categoria].cor, '--i': 1 }"
-      >
+      <header class="hero entrada" :style="{ '--cor': desafio.cor, '--i': 1 }">
         <span class="faixa" aria-hidden="true"></span>
 
         <div class="hero-info">
           <div class="tags">
-            <span class="tag tag-categoria">{{ CATEGORIAS[desafio.categoria].rotulo }}</span>
+            <span v-for="categoria in desafio.categorias" :key="categoria" class="tag tag-categoria">{{ categoria }}</span>
             <span class="tag tag-escopo">{{ ESCOPOS[desafio.escopo] }}</span>
             <span
               class="tag"
@@ -96,16 +153,24 @@ function concluirDesafio() {
           <p class="descricao">{{ desafio.descricao }}</p>
 
           <div class="fatos">
-            <span class="xp"><DesafioIcone nome="estrela" :tamanho="15" /> {{ desafio.xp }} XP</span>
             <span class="mc"><DesafioIcone nome="moeda" :tamanho="17" /> {{ desafio.mc }} MC</span>
-            <span><DesafioIcone nome="relogio" :tamanho="15" /> {{ rotuloDias(desafio.dias) }} restantes</span>
+            <span><DesafioIcone nome="relogio" :tamanho="15" /> {{ rotuloPrazo(desafio, true) }}</span>
             <span>
               <DesafioIcone :nome="desafio.escopo === 'coletivo' ? 'usuarios' : 'usuario'" :tamanho="15" />
-              {{ desafio.participantes }} de {{ desafio.meta }} participantes
+              <template v-if="desafio.meta">{{ desafio.participantes }} de {{ desafio.meta }} participantes</template>
+              <template v-else>{{ desafio.participantes }} {{ desafio.participantes === 1 ? 'participante' : 'participantes' }}</template>
             </span>
           </div>
 
-          <div class="trilho" role="progressbar" :aria-valuenow="participacao" aria-valuemin="0" aria-valuemax="100" aria-label="Participação">
+          <div
+            v-if="desafio.meta"
+            class="trilho"
+            role="progressbar"
+            :aria-valuenow="participacao"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-label="Participação"
+          >
             <div class="preenchido" :style="{ width: participacao + '%' }"></div>
           </div>
         </div>
@@ -126,7 +191,7 @@ function concluirDesafio() {
           </svg>
           <div class="anel-texto">
             <strong>{{ progresso }}%</strong>
-            <span>{{ terminou ? 'Concluído' : 'Pendente' }}</span>
+            <span>{{ terminou ? 'Concluído' : desafio.participando ? 'Em andamento' : 'Pendente' }}</span>
           </div>
         </div>
       </header>
@@ -138,8 +203,12 @@ function concluirDesafio() {
         </div>
 
         <Transition name="aviso">
-          <p v-if="!desafio.participando" class="aviso" style="text-align: center;">
-            Participe do desafio para poder marcá-lo como concluído.
+          <p v-if="!desafio.participando && !terminou" class="aviso" style="text-align: center;">
+            {{
+              desafio.encerrado
+                ? 'O prazo deste desafio já acabou.'
+                : 'Participe do desafio para poder marcá-lo como concluído.'
+            }}
           </p>
         </Transition>
 
@@ -147,33 +216,36 @@ function concluirDesafio() {
           <div v-if="terminou" class="parabens" role="status" style="text-align: center; justify-items: center;">
             <DesafioIcone nome="check" :tamanho="36" style="color: #16a34a; margin-bottom: 8px;" />
             <strong>Desafio concluído!</strong>
-            <span>Você ganhou {{ desafio.xp }} XP e {{ desafio.mc }} MC.</span>
+            <span v-if="moedasGanhas">Você ganhou {{ moedasGanhas }} MC.</span>
+            <span v-else>Você já recebeu as {{ desafio.mc }} MC deste desafio.</span>
           </div>
         </Transition>
 
         <!-- BOTÃO DE CONCLUIR DIRETO -->
         <div v-if="desafio.participando && !terminou" class="acao" style="margin-top: 8px;">
-          <button type="button" class="botao" @click="concluirDesafio">
-            Sim, cumpri o desafio
+          <button type="button" class="botao" :disabled="enviando" @click="concluirDesafio">
+            {{ enviando ? 'Salvando...' : 'Sim, cumpri o desafio' }}
           </button>
         </div>
       </section>
 
       <!-- AÇÃO SECUNDÁRIA (Abandonar / Participar) -->
-      <div class="acao entrada" :style="{ '--i': 4 }">
-        <!-- MODIFICADO: Chama a função tentarAbandonar em vez da função abandonar direta -->
-        <button v-if="desafio.participando" type="button" class="botao botao-suave" @click="tentarAbandonar">
+      <div v-if="!terminou" class="acao entrada" :style="{ '--i': 4 }">
+        <button v-if="desafio.participando" type="button" class="botao botao-suave" :disabled="enviando" @click="tentarAbandonar">
           Abandonar desafio
         </button>
-        <button v-else type="button" class="botao" @click="participar(desafio)">Participar do desafio</button>
+        <button v-else-if="desafio.encerrado" type="button" class="botao botao-suave" disabled>Desafio encerrado</button>
+        <button v-else type="button" class="botao" :disabled="enviando" @click="entrar">
+          {{ enviando ? 'Entrando...' : 'Participar do desafio' }}
+        </button>
       </div>
     </template>
 
     <!-- MODAL DE CONFIRMAÇÃO -->
-    <ConfirmarAbandono 
-      v-if="modalAbandonoAberto" 
-      @confirmar="confirmarAbandono" 
-      @cancelar="modalAbandonoAberto = false" 
+    <ConfirmarAbandono
+      v-if="modalAbandonoAberto"
+      @confirmar="confirmarAbandono"
+      @cancelar="modalAbandonoAberto = false"
     />
   </div>
 </template>
@@ -499,5 +571,22 @@ function concluirDesafio() {
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* ---------- ESTADOS: ERRO E BOTÃO DESABILITADO ---------- */
+.aviso-erro {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid #f3c4c4;
+  border-radius: 10px;
+  background: #fde8e8;
+  color: #b91c1c;
+  font-size: 14px;
+}
+.botao:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
+  filter: none;
 }
 </style>

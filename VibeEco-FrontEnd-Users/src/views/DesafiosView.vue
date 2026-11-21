@@ -1,20 +1,48 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import DesafioIcone from '@/components/DesafioIcone.vue'
 import ConfirmarAbandono from '@/components/ConfirmarAbandono.vue'
 import {
-  CATEGORIAS,
   DIFICULDADES,
   ESCOPOS,
   abandonar,
-  desafios,
+  listarDesafios,
+  mensagemDeErro,
   participar,
-  progressoDe,
-  rotuloDias,
+  rotuloPrazo,
 } from '@/services/desafios'
 
 const router = useRouter()
+
+// ---------- DADOS (vêm da API) ----------
+const desafios = ref([])
+const carregando = ref(true)
+const erro = ref('')
+
+async function carregar() {
+  carregando.value = true
+  erro.value = ''
+  try {
+    desafios.value = await listarDesafios()
+  } catch (e) {
+    erro.value = 'Não foi possível carregar os desafios. Tente novamente.'
+    if (import.meta.env.DEV) console.error(e)
+  } finally {
+    carregando.value = false
+  }
+}
+onMounted(carregar)
+
+// Reconsulta sem trocar a tela por "carregando" (usado quando a API recusa uma ação por o
+// estado ter mudado, ex.: o prazo acabou enquanto a página estava aberta)
+async function atualizarEmSilencio() {
+  try {
+    desafios.value = await listarDesafios()
+  } catch {
+    /* mantém a lista como está */
+  }
+}
 
 // ---------- ABAS ----------
 const abas = [
@@ -25,141 +53,192 @@ const abas = [
 const aba = ref('todos')
 
 function daAba(id) {
-  return id === 'todos' ? desafios : desafios.filter((d) => d.escopo === id)
+  return id === 'todos' ? desafios.value : desafios.value.filter((d) => d.escopo === id)
 }
 const visiveis = computed(() => daAba(aba.value))
-const participando = computed(() => desafios.filter((d) => d.participando).length)
+const participando = computed(() => desafios.value.filter((d) => d.participando).length)
+
+// ---------- AÇÕES ----------
+const erroAcao = ref('')
+const enviando = ref(false) // trava cliques repetidos enquanto uma ação está a caminho
+const entrandoId = ref(null) // qual card mostra "Entrando..."
+
+function falhou(e, mensagemPadrao) {
+  erroAcao.value = mensagemDeErro(e, mensagemPadrao)
+  if (e?.status === 409) atualizarEmSilencio()
+  if (import.meta.env.DEV) console.error(e)
+}
 
 // --- CONTROLE DO MODAL DE ABANDONO ---
 const modalAbandonoAberto = ref(false)
 const desafioAlvo = ref(null)
 
 function tentarSair(desafio) {
+  erroAcao.value = ''
   desafioAlvo.value = desafio
   modalAbandonoAberto.value = true
 }
 
-function confirmarAbandono() {
-  if (desafioAlvo.value) {
-    abandonar(desafioAlvo.value)
+async function confirmarAbandono() {
+  const alvo = desafioAlvo.value
+  if (!alvo || enviando.value) return
+  enviando.value = true
+  try {
+    await abandonar(alvo)
+  } catch (e) {
+    falhou(e, 'Não foi possível abandonar o desafio. Tente novamente.')
+  } finally {
+    enviando.value = false
+    modalAbandonoAberto.value = false
+    desafioAlvo.value = null
   }
-  modalAbandonoAberto.value = false
-  desafioAlvo.value = null
 }
 
-// ---------- AÇÕES ----------
-function entrar(desafio) {
-  participar(desafio)
-  // leva direto para as tarefas do desafio
-  router.push({ name: 'desafio-detalhe', params: { id: desafio.id } })
+async function entrar(desafio) {
+  if (enviando.value) return
+  enviando.value = true
+  entrandoId.value = desafio.id
+  erroAcao.value = ''
+  try {
+    await participar(desafio)
+    // leva direto para o desafio
+    router.push({ name: 'desafio-detalhe', params: { id: desafio.id } })
+  } catch (e) {
+    falhou(e, 'Não foi possível entrar no desafio. Tente novamente.')
+  } finally {
+    enviando.value = false
+    entrandoId.value = null
+  }
 }
 
+// Sem meta cadastrada (ou meta 0) não há como calcular a porcentagem
 function pct(valor, total) {
+  if (!total) return 0
   return Math.min(100, Math.round((valor / total) * 100))
 }
 </script>
 
 <template>
   <div class="pagina">
-    <!-- ABAS + RESUMO -->
-    <div class="barra entrada">
-      <div class="abas" role="tablist" aria-label="Filtrar desafios">
-        <button
-          v-for="item in abas"
-          :key="item.id"
-          type="button"
-          role="tab"
-          class="aba"
-          :class="{ 'aba-ativa': aba === item.id }"
-          :aria-selected="aba === item.id"
-          @click="aba = item.id"
-        >
-          {{ item.rotulo }}
-          <span class="aba-contador">{{ daAba(item.id).length }}</span>
-        </button>
-      </div>
-
-      <p class="resumo">
-        <strong>{{ participando }}</strong>
-        {{ participando === 1 ? 'desafio em andamento' : 'desafios em andamento' }}
-      </p>
+    <!-- CARREGANDO -->
+    <div v-if="carregando" class="vazio entrada" role="status">
+      <strong>Carregando desafios...</strong>
     </div>
 
-    <!-- GRADE (o :key refaz a animação ao trocar de aba) -->
-    <div :key="aba" class="grade">
-      <article
-        v-for="(d, i) in visiveis"
-        :key="d.id"
-        class="card entrada"
-        :class="{ 'card-ativo': d.participando }"
-        :style="{ '--i': i, '--cor': CATEGORIAS[d.categoria].cor }"
-      >
-        <span class="faixa" aria-hidden="true"></span>
+    <!-- ERRO AO CARREGAR -->
+    <div v-else-if="erro" class="vazio entrada" role="alert">
+      <strong>{{ erro }}</strong>
+      <button type="button" class="botao botao-inline" @click="carregar">Tentar novamente</button>
+    </div>
 
-        <div class="tags">
-          <span class="tag tag-categoria">{{ CATEGORIAS[d.categoria].rotulo }}</span>
-          <span class="tag tag-escopo">{{ ESCOPOS[d.escopo] }}</span>
-          <span
-            class="tag"
-            :style="{ background: DIFICULDADES[d.dificuldade].fundo, color: DIFICULDADES[d.dificuldade].texto }"
+    <template v-else>
+      <!-- ERRO DE UMA AÇÃO (participar, abandonar) -->
+      <p v-if="erroAcao" class="aviso-erro entrada" role="alert">{{ erroAcao }}</p>
+
+      <!-- ABAS + RESUMO -->
+      <div class="barra entrada">
+        <div class="abas" role="tablist" aria-label="Filtrar desafios">
+          <button
+            v-for="item in abas"
+            :key="item.id"
+            type="button"
+            role="tab"
+            class="aba"
+            :class="{ 'aba-ativa': aba === item.id }"
+            :aria-selected="aba === item.id"
+            @click="aba = item.id"
           >
-            {{ DIFICULDADES[d.dificuldade].rotulo }}
-          </span>
-          <span v-if="d.participando" class="tag tag-participando">Participando</span>
+            {{ item.rotulo }}
+            <span class="aba-contador">{{ daAba(item.id).length }}</span>
+          </button>
         </div>
 
-        <h3 class="titulo">
-          <!-- o ::after deste link cobre o card inteiro, então o card todo é clicável -->
-          <RouterLink :to="{ name: 'desafio-detalhe', params: { id: d.id } }" class="card-link">
-            {{ d.titulo }}
-          </RouterLink>
-        </h3>
-        <p class="descricao">{{ d.descricao }}</p>
-
-        <div class="medidor">
-          <div class="medidor-topo">
-            <span>Participação</span>
-            <span>{{ d.participantes }}/{{ d.meta }}</span>
-          </div>
-          <div class="trilho">
-            <div class="preenchido" :style="{ width: pct(d.participantes, d.meta) + '%' }"></div>
-          </div>
-        </div>
-
-        <div v-if="d.participando" class="medidor">
-          <div class="medidor-topo">
-            <span>Seu progresso</span>
-            <span>{{ progressoDe(d) }}%</span>
-          </div>
-          <div class="trilho">
-            <div class="preenchido preenchido-meu" :style="{ width: progressoDe(d) + '%' }"></div>
-          </div>
-        </div>
-
-        <div class="recompensas">
-          <span class="xp"><DesafioIcone nome="estrela" :tamanho="14" /> {{ d.xp }} XP</span>
-          <span class="mc"><DesafioIcone nome="moeda" :tamanho="16" /> {{ d.mc }}</span>
-          <span class="tempo"><DesafioIcone nome="relogio" :tamanho="14" /> {{ rotuloDias(d.dias) }}</span>
-        </div>
-
-        <!-- MODIFICADO: Chama a função tentarSair em vez de sair direto -->
-        <button v-if="d.participando" type="button" class="botao botao-suave" @click="tentarSair(d)">
-          Abandonar desafio
-        </button>
-        <button v-else type="button" class="botao" @click="entrar(d)">Participar do desafio</button>
-      </article>
-
-      <div v-if="!visiveis.length" class="vazio entrada">
-        <strong>Nenhum desafio nesta categoria</strong>
-        <p>Novos desafios aparecem aqui assim que forem publicados.</p>
+        <p class="resumo">
+          <strong>{{ participando }}</strong>
+          {{ participando === 1 ? 'desafio em andamento' : 'desafios em andamento' }}
+        </p>
       </div>
-    </div>
+
+      <!-- GRADE (o :key refaz a animação ao trocar de aba) -->
+      <div :key="aba" class="grade">
+        <article
+          v-for="(d, i) in visiveis"
+          :key="d.id"
+          class="card entrada"
+          :class="{ 'card-ativo': d.participando }"
+          :style="{ '--i': i, '--cor': d.cor }"
+        >
+          <span class="faixa" aria-hidden="true"></span>
+
+          <div class="tags">
+            <span v-for="categoria in d.categorias" :key="categoria" class="tag tag-categoria">{{ categoria }}</span>
+            <span class="tag tag-escopo">{{ ESCOPOS[d.escopo] }}</span>
+            <span
+              class="tag"
+              :style="{ background: DIFICULDADES[d.dificuldade].fundo, color: DIFICULDADES[d.dificuldade].texto }"
+            >
+              {{ DIFICULDADES[d.dificuldade].rotulo }}
+            </span>
+            <span v-if="d.participando" class="tag tag-participando">Participando</span>
+            <span v-else-if="d.concluido" class="tag tag-participando">Concluído</span>
+          </div>
+
+          <h3 class="titulo">
+            <!-- o ::after deste link cobre o card inteiro, então o card todo é clicável -->
+            <RouterLink :to="{ name: 'desafio-detalhe', params: { id: d.id } }" class="card-link">
+              {{ d.titulo }}
+            </RouterLink>
+          </h3>
+          <p class="descricao">{{ d.descricao }}</p>
+
+          <div class="medidor">
+            <div class="medidor-topo">
+              <span>Participação</span>
+              <span v-if="d.meta">{{ d.participantes }}/{{ d.meta }}</span>
+              <span v-else>{{ d.participantes }} {{ d.participantes === 1 ? 'participante' : 'participantes' }}</span>
+            </div>
+            <div v-if="d.meta" class="trilho">
+              <div class="preenchido" :style="{ width: pct(d.participantes, d.meta) + '%' }"></div>
+            </div>
+          </div>
+
+          <div v-if="d.participando || d.concluido" class="medidor">
+            <div class="medidor-topo">
+              <span>Seu progresso</span>
+              <span>{{ d.progresso }}%</span>
+            </div>
+            <div class="trilho">
+              <div class="preenchido preenchido-meu" :style="{ width: d.progresso + '%' }"></div>
+            </div>
+          </div>
+
+          <div class="recompensas">
+            <span class="mc"><DesafioIcone nome="moeda" :tamanho="16" /> {{ d.mc }}</span>
+            <span class="tempo"><DesafioIcone nome="relogio" :tamanho="14" /> {{ rotuloPrazo(d) }}</span>
+          </div>
+
+          <button v-if="d.participando" type="button" class="botao botao-suave" :disabled="enviando" @click="tentarSair(d)">
+            Abandonar desafio
+          </button>
+          <button v-else-if="d.concluido" type="button" class="botao botao-suave" disabled>Desafio concluído</button>
+          <button v-else-if="d.encerrado" type="button" class="botao botao-suave" disabled>Desafio encerrado</button>
+          <button v-else type="button" class="botao" :disabled="enviando" @click="entrar(d)">
+            {{ entrandoId === d.id ? 'Entrando...' : 'Participar do desafio' }}
+          </button>
+        </article>
+
+        <div v-if="!visiveis.length" class="vazio entrada">
+          <strong>Nenhum desafio nesta categoria</strong>
+          <p>Novos desafios aparecem aqui assim que forem publicados.</p>
+        </div>
+      </div>
+    </template>
 
     <!-- MODAL DE CONFIRMAÇÃO -->
-    <ConfirmarAbandono 
-      v-if="modalAbandonoAberto" 
-      @confirmar="confirmarAbandono" 
-      @cancelar="modalAbandonoAberto = false" 
+    <ConfirmarAbandono
+      v-if="modalAbandonoAberto"
+      @confirmar="confirmarAbandono"
+      @cancelar="modalAbandonoAberto = false"
     />
   </div>
 </template>
@@ -488,5 +567,25 @@ function pct(valor, total) {
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* ---------- ESTADOS: ERRO E BOTÃO DESABILITADO ---------- */
+.aviso-erro {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid #f3c4c4;
+  border-radius: 10px;
+  background: #fde8e8;
+  color: #b91c1c;
+  font-size: 14px;
+}
+.botao:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
+  filter: none;
+}
+.botao-inline {
+  padding: 10px 18px;
 }
 </style>
