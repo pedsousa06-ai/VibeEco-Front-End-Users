@@ -1,6 +1,6 @@
 import { obterToken } from "./auth";
 
-const BASE_URL = import.meta.env.VITE_API_URL
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/v1/senai/vibeEco'
 
 function montarCabecalhos(comCorpo) {
     const headers = {}

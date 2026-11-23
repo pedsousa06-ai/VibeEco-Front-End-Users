@@ -1,7 +1,7 @@
 
 import { idDoUsuario } from './sessao'
 
-const API_URL = import.meta.env.VITE_API_URL
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/v1/senai/vibeEco'
 
 export const ESCOPOS = [
   { id: 'geral', nome: 'Geral', sufixo: 'do ranking geral' },
