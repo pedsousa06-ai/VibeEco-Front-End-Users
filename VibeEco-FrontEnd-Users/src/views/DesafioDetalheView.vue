@@ -228,7 +228,7 @@ function concluirDesafio() {
   transition: transform 0.2s;
 }
 .voltar:hover {
-  color: #0f5a2c;
+  color: var(--verde-forte);
 }
 .voltar:hover svg {
   transform: translateX(-3px);
@@ -249,7 +249,7 @@ function concluirDesafio() {
   overflow: hidden;
   border: 1px solid var(--borda);
   border-radius: 18px;
-  background: #fff;
+  background: var(--superficie);
   box-shadow: 0 1px 2px rgba(18, 38, 26, 0.04);
 }
 .faixa {
@@ -276,12 +276,12 @@ function concluirDesafio() {
   font-weight: 600;
 }
 .tag-categoria {
-  background: color-mix(in srgb, var(--cor) 14%, #fff);
-  color: color-mix(in srgb, var(--cor) 70%, #000);
+  background: color-mix(in srgb, var(--cor) 14%, var(--superficie));
+  color: color-mix(in srgb, var(--cor) 40%, var(--verde-forte));
 }
 .tag-escopo {
-  background: #eef2ef;
-  color: #52665a;
+  background: var(--suave-fundo);
+  color: var(--suave-texto);
 }
 .hero h2 {
   margin: 0;
@@ -292,7 +292,7 @@ function concluirDesafio() {
 .descricao {
   margin: 0;
   max-width: 60ch;
-  color: #4b5d52;
+  color: var(--texto-medio);
   font-size: 15px;
   line-height: 1.55;
 }
@@ -309,7 +309,7 @@ function concluirDesafio() {
   gap: 6px;
 }
 .fatos .mc {
-  color: #15803d;
+  color: var(--verde-forte);
   font-weight: 700;
 }
 .fatos .mc svg {
@@ -319,7 +319,7 @@ function concluirDesafio() {
   height: 7px;
   overflow: hidden;
   border-radius: 99px;
-  background: #e3ece6;
+  background: var(--trilho);
 }
 .preenchido {
   height: 100%;
@@ -337,7 +337,7 @@ function concluirDesafio() {
 }
 .anel-fundo {
   fill: none;
-  stroke: #e3ece6;
+  stroke: var(--trilho);
   stroke-width: 10;
 }
 .anel-valor {
@@ -375,7 +375,7 @@ function concluirDesafio() {
   padding: 22px 24px;
   border: 1px solid var(--borda);
   border-radius: 18px;
-  background: #fff;
+  background: var(--superficie);
 }
 .tarefas-topo {
   display: flex;
@@ -392,18 +392,18 @@ function concluirDesafio() {
   margin: 0;
   padding: 10px 14px;
   border-radius: 10px;
-  background: #fff7e6;
-  color: #92400e;
+  background: var(--amarelo-fundo);
+  color: var(--amarelo-texto);
   font-size: 14px;
 }
 .parabens {
   display: grid;
   gap: 4px;
   padding: 20px 16px;
-  border: 1px solid #fcd34d;
+  border: 1px solid var(--amarelo-borda);
   border-radius: 12px;
-  background: #fffbeb;
-  color: #92400e;
+  background: var(--amarelo-fundo);
+  color: var(--amarelo-texto);
   font-size: 14px;
 }
 .parabens strong {
@@ -440,13 +440,13 @@ function concluirDesafio() {
   outline-offset: 2px;
 }
 .botao-suave {
-  background: #eef2ef;
-  color: #52665a;
+  background: var(--suave-fundo);
+  color: var(--suave-texto);
 }
 .botao-suave:hover {
   filter: none;
-  background: #fde8e8;
-  color: #b91c1c;
+  background: var(--erro-fundo);
+  color: var(--erro-texto);
 }
 
 .vazio {
@@ -460,7 +460,7 @@ function concluirDesafio() {
   text-align: center;
 }
 .vazio strong {
-  color: #0f5a2c;
+  color: var(--verde-forte);
   font-size: 16px;
 }
 .vazio p {
@@ -517,10 +517,10 @@ function concluirDesafio() {
 .aviso-erro {
   margin: 0;
   padding: 10px 14px;
-  border: 1px solid #f3c4c4;
+  border: 1px solid var(--erro-borda);
   border-radius: 10px;
-  background: #fde8e8;
-  color: #b91c1c;
+  background: var(--erro-fundo);
+  color: var(--erro-texto);
   font-size: 14px;
 }
 .botao:disabled {

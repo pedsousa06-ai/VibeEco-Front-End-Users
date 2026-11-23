@@ -141,18 +141,7 @@ function deslogar() {
 
 /* Cores compartilhadas com todas as telas internas (variáveis herdadas pelo <RouterView />) */
 .app {
-  --verde-950: #06361b;
-  --verde-900: #0a4a26;
-  --verde-700: #0f7a3b;
-  --verde-600: #16a34a;
-  --verde-500: #22c55e;
-  --verde-100: #dcf5e5;
-  --fundo: #f2f7f3;
-  --borda: #e0eae2;
-  --texto: #12261a;
-  --texto-suave: #64756a;
   --largura-menu: 256px;
-  --superficie: #fff;
 
   min-height: 100vh;
   background: var(--fundo);
@@ -167,7 +156,7 @@ function deslogar() {
   z-index: 100;
   padding: 10px 16px;
   border-radius: 8px;
-  background: #fff;
+  background: var(--superficie);
   color: var(--texto);
   font-weight: 600;
   text-decoration: none;
@@ -343,7 +332,7 @@ function deslogar() {
   padding: 0 24px;
   box-sizing: border-box;
   border-bottom: 1px solid var(--borda);
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--topo-fundo);
   backdrop-filter: blur(8px);
 }
 .topo-titulo {
@@ -358,7 +347,7 @@ function deslogar() {
   height: 38px;
   border: 1px solid var(--borda);
   border-radius: 10px;
-  background: #fff;
+  background: var(--superficie);
   color: var(--texto);
   cursor: pointer;
 }
@@ -411,17 +400,17 @@ function deslogar() {
   white-space: nowrap;
 }
 .chip-xp {
-  border: 1px solid #f3dd9a;
-  background: #fff8df;
-  color: #8a5a00;
+  border: 1px solid var(--amarelo-borda);
+  background: var(--amarelo-fundo);
+  color: var(--amarelo-texto);
 }
 .chip-xp svg {
   color: #f5b301;
 }
 .chip-mc {
-  border: 1px solid #c9e8d2;
-  background: #eef9f1;
-  color: #0f5b2d;
+  border: 1px solid var(--sucesso-borda);
+  background: var(--sucesso-fundo);
+  color: var(--verde-forte);
 }
 
 .sino {
@@ -447,7 +436,7 @@ function deslogar() {
   right: 9px;
   width: 8px;
   height: 8px;
-  border: 2px solid #fff;
+  border: 2px solid var(--superficie);
   border-radius: 50%;
   box-sizing: content-box;
   background: #ef4444;

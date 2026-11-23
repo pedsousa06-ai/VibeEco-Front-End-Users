@@ -1,6 +1,7 @@
 import { reactive, watch } from "vue";
 import '@/assets/acessibilidade.css';
 import { usuario } from './usuario'; 
+import '@/assets/tema.css'
 
 const CHAVE = 'vebeeco:configuracoes'
 const API_URL = 'http://localhost:8080/v1/senai/vibeEco' // URL do seu back-end

@@ -12,9 +12,9 @@ import { idDoUsuario } from '@/services/sessao'
 import { usuario } from '@/services/usuario'
 
 export const DIFICULDADES = {
-  facil: { rotulo: 'Fácil', fundo: '#e3f5ea', texto: '#15803d' },
-  medio: { rotulo: 'Médio', fundo: '#fff1e0', texto: '#c2610c' },
-  dificil: { rotulo: 'Difícil', fundo: '#fde8e8', texto: '#c81e1e' },
+  facil: { rotulo: 'Fácil', fundo: 'var(--facil-fundo)', texto: 'var(--facil-texto)' },
+  medio: { rotulo: 'Médio', fundo: 'var(--medio-fundo)', texto: 'var(--medio-texto)' },
+  dificil: { rotulo: 'Difícil', fundo: 'var(--dificil-fundo)', texto: 'var(--dificil-texto)' },
 }
 
 export const ESCOPOS = {

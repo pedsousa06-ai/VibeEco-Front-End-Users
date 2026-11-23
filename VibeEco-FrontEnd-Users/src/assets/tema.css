@@ -1,0 +1,46 @@
+:root {
+  --verde-950: #06361b;
+  --verde-900: #0a4a26;
+  --verde-700: #0f7a3b;
+  --verde-600: #16a34a;
+  --verde-500: #22c55e;
+  --verde-100: #dcf5e5;
+  --fundo: #f2f7f3;
+  --superficie: #fff;
+  --borda: #e0eae2;
+  --texto: #12261a;
+  --texto-suave: #64756a;
+
+    /* abas, trilhos e botões suaves */
+  --aba-fundo: #e8f1ea;
+  --aba-ativa: #fff;
+  --trilho: #d6eadb;
+  --suave-fundo: #eef2ef;
+  --suave-texto: #52665a;
+  --hover-suave: #e8f4eb;
+  --zebra: #f3f8f4;
+
+  /* textos em verde e destaque */
+  --verde-forte: #0f5a2c;
+  --texto-medio: #4b5d52;
+  --destaque-fundo: #dcf8e6;
+
+  /* amarelo (XP, avisos) */
+  --amarelo-fundo: #fef3c7;
+  --amarelo-texto: #8a5a00;
+
+  /* erro e sucesso */
+  --erro-fundo: #fde8e8;
+  --erro-borda: #f3c4c4;
+  --erro-texto: #b91c1c;
+  --sucesso-fundo: #e6f7ec;
+  --sucesso-borda: #bfe8cc;
+
+  --topo-fundo: rgba(255, 255, 255, 0.92);
+  --amarelo-borda: #f3dd9a;
+
+  --facil-fundo: #e3f5ea;   --facil-texto: #15803d;
+  --medio-fundo: #fff1e0;   --medio-texto: #c2610c;
+  --dificil-fundo: #fde8e8; --dificil-texto: #c81e1e;
+}
+

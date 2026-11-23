@@ -263,7 +263,7 @@ function pct(valor, total) {
   gap: 4px;
   padding: 4px;
   border-radius: 12px;
-  background: #e8f1ea;
+  background: var(--aba-fundo);
 }
 .aba {
   display: inline-flex;
@@ -281,15 +281,15 @@ function pct(valor, total) {
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 .aba:hover {
-  color: #0f5a2c;
+  color: var(--verde-forte);
 }
 .aba:focus-visible {
   outline: 2px solid var(--verde-600);
   outline-offset: 2px;
 }
 .aba-ativa {
-  background: #fff;
-  color: #0f5a2c;
+  background: var(--aba-ativa);
+  color: var(--verde-forte);
   box-shadow: 0 1px 3px rgba(18, 38, 26, 0.12);
 }
 .aba-contador {
@@ -299,8 +299,8 @@ function pct(valor, total) {
   height: 20px;
   padding: 0 6px;
   border-radius: 99px;
-  background: #d3e6d9;
-  color: #0f5a2c;
+  background: var(--trilho);
+  color: var(--verde-forte);
   font-size: 11px;
   font-weight: 700;
   transition: background 0.2s, color 0.2s;
@@ -315,7 +315,7 @@ function pct(valor, total) {
   font-size: 14px;
 }
 .resumo strong {
-  color: #0f5a2c;
+  color: var(--verde-forte);
   font-size: 15px;
 }
 
@@ -337,7 +337,7 @@ function pct(valor, total) {
   overflow: hidden;
   border: 1px solid var(--borda);
   border-radius: 16px;
-  background: #fff;
+  background: var(--superficie);
   box-shadow: 0 1px 2px rgba(18, 38, 26, 0.04);
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
@@ -379,17 +379,17 @@ function pct(valor, total) {
   font-weight: 600;
 }
 .tag-categoria {
-  background: color-mix(in srgb, var(--cor) 14%, #fff);
-  color: color-mix(in srgb, var(--cor) 70%, #000);
+  background: color-mix(in srgb, var(--cor) 14%, var(--superficie));
+  color: color-mix(in srgb, var(--cor) 40%, var(--texto));
 }
 .tag-escopo {
-  background: #eef2ef;
-  color: #52665a;
+  background: var(--suave-fundo);
+  color: var(--suave-texto);
 }
 .tag-participando {
   margin-left: auto;
-  background: #dcf8e6;
-  color: #15803d;
+  background: var(--destaque-fundo);
+  color: var(--verde-forte);
 }
 
 .titulo {
@@ -413,7 +413,7 @@ function pct(valor, total) {
 }
 .descricao {
   margin: 0;
-  color: #4b5d52;
+  color: var(--texto-medio);
   font-size: 14px;
   line-height: 1.5;
 }
@@ -434,7 +434,7 @@ function pct(valor, total) {
   height: 7px;
   overflow: hidden;
   border-radius: 99px;
-  background: #e3ece6;
+  background: var(--trilho);
 }
 .preenchido {
   height: 100%;
@@ -471,7 +471,7 @@ function pct(valor, total) {
   color: #f59e0b;
 }
 .mc {
-  color: #15803d;
+  color: var(--verde-forte);
 }
 .mc svg {
   color: #64748b;
@@ -512,13 +512,13 @@ function pct(valor, total) {
   outline-offset: 2px;
 }
 .botao-suave {
-  background: #eef2ef;
-  color: #52665a;
+  background: var(--suave-fundo);
+  color: var(--texto-suave);
 }
 .botao-suave:hover {
   filter: none;
-  background: #fde8e8;
-  color: #b91c1c;
+  background: var(--erro-fundo);
+  color: var(--erro-texto);
 }
 
 .vazio {
@@ -533,7 +533,7 @@ function pct(valor, total) {
   text-align: center;
 }
 .vazio strong {
-  color: #0f5a2c;
+  color: var(--verde-forte);
   font-size: 16px;
 }
 .vazio p {
@@ -573,10 +573,10 @@ function pct(valor, total) {
 .aviso-erro {
   margin: 0;
   padding: 10px 14px;
-  border: 1px solid #f3c4c4;
+  border: 1px solid var(--erro-borda);
   border-radius: 10px;
-  background: #fde8e8;
-  color: #b91c1c;
+  background: var(--erro-fundo);
+  color: var(--erro-texto);
   font-size: 14px;
 }
 .botao:disabled {

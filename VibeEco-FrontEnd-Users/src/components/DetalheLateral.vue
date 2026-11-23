@@ -111,7 +111,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   width: min(440px, 100%);
   height: 100%;
-  background: #fff;
+  background: var(--superficie);
   box-shadow: -20px 0 50px -20px rgba(0, 0, 0, 0.4);
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
 }
