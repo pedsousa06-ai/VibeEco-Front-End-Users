@@ -12,22 +12,13 @@ const erro = ref('')
 const montado = ref(false)
 let timer
 
-// --- DADOS DE TESTE (MOCK) PARA GARANTIR QUE AS MISSÕES APAREÇAM ---
-const MISSOES_MOCK = [
-  { id_missao: 2, nome_missao: 'Economize água', progresso_missao: 50, nome_dificuldade: 'Médio', xp_missao: 200, prazo_dias: 12 },
-  { id_missao: 3, nome_missao: 'Reduza o consumo de energia', progresso_missao: 25, nome_dificuldade: 'Difícil', xp_missao: 300, prazo_dias: 20 }
-]
-
 async function carregarTela() {
   carregando.value = true
   erro.value = ''
   try {
     const dadosApi = await carregarTelaInicial()
-    
-    // Se a API não retornar missões, usa o MOCK
-    if (!dadosApi.missoes_em_andamento || dadosApi.missoes_em_andamento.length === 0) {
-      dadosApi.missoes_em_andamento = MISSOES_MOCK
-    }
+
+    console.log(dadosApi.conteudos_recomendados)
 
     dados.value = dadosApi
   } catch (e) {
@@ -342,17 +333,17 @@ function classeDificuldade(texto) {
 <style scoped>
 .inicio { display: grid; gap: 20px; }
 .card { border: 1px solid var(--borda); border-radius: 16px; background: var(--superficie); box-shadow: 0 1px 2px rgba(18, 38, 26, 0.04); }
-.tag { display: inline-block; padding: 3px 10px; border-radius: 99px; background: var(--verde-100); color: #0f6b34; font-size: 12px; font-weight: 600; }
-.xp { display: inline-flex; align-items: center; gap: 4px; color: #8a5a00; font-size: 13px; font-weight: 700; }
+.tag { display: inline-block; padding: 3px 10px; border-radius: 99px; background: var(--verde-100); color: var(--verde-forte); font-size: 12px; font-weight: 600; }
+.xp { display: inline-flex; align-items: center; gap: 4px; color: var(--amarelo-texto); font-size: 13px; font-weight: 700; }
 .xp svg { color: #f5b301; }
-.barra { height: 8px; border-radius: 99px; background: #d6eadb; overflow: hidden; }
+.barra { height: 8px; border-radius: 99px; background: var(--trilho); overflow: hidden; }
 .barra-preenchimento { position: relative; overflow: hidden; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #16a34a, #4ade80); transition: width 0.9s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .barra-clara { background: rgba(255, 255, 255, 0.25); }
 .barra-clara .barra-preenchimento { background: linear-gradient(90deg, #86efac, #fff); }
-.cor-verde { background: #dcf5e5; color: #16a34a; }
-.cor-amarelo { background: #fef3c7; color: #d97706; }
-.cor-roxo { background: #ede9fe; color: #7c3aed; }
-.cor-laranja { background: #ffedd5; color: #ea580c; }
+.cor-verde   { background: color-mix(in srgb, #16a34a 16%, var(--superficie)); color: color-mix(in srgb, #16a34a 75%, var(--texto)); }
+.cor-amarelo { background: color-mix(in srgb, #d97706 16%, var(--superficie)); color: color-mix(in srgb, #d97706 75%, var(--texto)); }
+.cor-roxo    { background: color-mix(in srgb, #7c3aed 16%, var(--superficie)); color: color-mix(in srgb, #7c3aed 75%, var(--texto)); }
+.cor-laranja { background: color-mix(in srgb, #ea580c 16%, var(--superficie)); color: color-mix(in srgb, #ea580c 75%, var(--texto)); }
 
 .banner { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 28px 32px; overflow: hidden; border-radius: 20px; color: #fff; background: linear-gradient(110deg, #0c4a25 0%, #117a3d 55%, #1fa856 100%); box-shadow: 0 14px 30px -14px rgba(13, 95, 49, 0.6); }
 .banner::before, .banner::after { content: ''; position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.07); pointer-events: none; }
@@ -389,12 +380,12 @@ function classeDificuldade(texto) {
 
 .missao { display: block; color: inherit; text-decoration: none; margin-bottom: 12px; padding: 16px 20px 18px; transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s; }
 .missao:last-child { margin-bottom: 0; }
-.missao:hover { transform: translateY(-2px); border-color: #bfe0c8; box-shadow: 0 10px 24px -12px rgba(18, 38, 26, 0.25); }
+.missao:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--verde-600) 35%, var(--borda)); box-shadow: 0 10px 24px -12px rgba(18, 38, 26, 0.25); }
 .missao-cima { display: flex; justify-content: space-between; gap: 16px; }
 .missao-tags { display: flex; align-items: center; gap: 10px; }
 .dificuldade { font-size: 12px; font-weight: 600; }
-.dif-facil { color: #16a34a; }
-.dif-medio { color: #d97706; }
+.dif-facil { color: var(--facil-texto); }
+.dif-medio { color: var(--medio-texto); }
 .dif-dificil { color: #dc2626; }
 .missao-titulo { display: block; margin-top: 8px; font-size: 16px; font-weight: 700; }
 .missao-lado { display: grid; justify-items: end; align-content: start; gap: 4px; flex: none; }
@@ -406,7 +397,7 @@ function classeDificuldade(texto) {
 .conteudo:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -12px rgba(18, 38, 26, 0.25); }
 .conteudo-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .conteudo-topo .tag { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
-.concluido { display: inline-flex; align-items: center; gap: 4px; color: #16a34a; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.concluido { display: inline-flex; align-items: center; gap: 4px; color: var(--verde-forte); font-size: 12px; font-weight: 600; white-space: nowrap; }
 .conteudo strong { font-size: 15px; line-height: 1.4; flex-grow: 1; }
 .conteudo-rodape { display: flex; align-items: center; justify-content: space-between; margin-top: auto; font-size: 12px; color: var(--texto-suave); }
 
@@ -419,7 +410,7 @@ function classeDificuldade(texto) {
 .ofensiva strong { color: #ea580c; font-size: 52px; font-weight: 800; line-height: 1; }
 .ofensiva span { margin-top: 6px; font-size: 14px; color: var(--texto-suave); }
 .dias { display: flex; justify-content: center; gap: 8px; }
-.dia { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #ffedd5; color: #c2410c; font-size: 12px; font-weight: 700; }
+.dia { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: color-mix(in srgb, #ea580c 16%, var(--superficie)); color: color-mix(in srgb, #ea580c 75%, var(--texto)); font-size: 12px; font-weight: 700; }
 .dia-ativo { background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; box-shadow: 0 4px 10px -4px rgba(234, 88, 12, 0.7); }
 .cabecalho-card { margin-bottom: 14px; }
 .seta-link { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; color: var(--verde-600); }
