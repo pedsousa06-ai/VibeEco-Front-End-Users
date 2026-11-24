@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { comAuth } from './api'
 
 const API_URL = 'http://localhost:8080/v1/senai/vibeEco'
 
@@ -19,7 +20,7 @@ export async function carregarHistorico(idUsuario) {
     if (!idUsuario) return
 
     try {
-        const response = await fetch(`${API_URL}/historico/${idUsuario}`)
+        const response = await fetch(`${API_URL}/historico/${idUsuario}`, comAuth())
         if (!response.ok) throw new Error('Erro ao buscar histórico')
 
         const data = await response.json()

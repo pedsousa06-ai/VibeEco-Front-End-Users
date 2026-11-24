@@ -4,7 +4,7 @@
 import { reactive } from 'vue'
 
 const CHAVE = 'vibeeco_recuperacao'
-const inicial = { email: '', codigoVerificado: false }
+const inicial = { email: '', codigoVerificado: false, token: '' }
 
 function carregar() {
   try {
@@ -24,12 +24,14 @@ function salvar() {
 export function iniciarRecuperacao(email) {
   recuperacao.email = email.trim()
   recuperacao.codigoVerificado = false
+  recuperacao.token = ''
   salvar()
 }
 
-// Etapa 2: chame quando o código for confirmado
-export function marcarCodigoVerificado() {
+// Etapa 2: chame quando o código for confirmado (token = autorização curta devolvida pela API)
+export function marcarCodigoVerificado(token = '') {
   recuperacao.codigoVerificado = true
+  recuperacao.token = token
   salvar()
 }
 
@@ -37,5 +39,6 @@ export function marcarCodigoVerificado() {
 export function limparRecuperacao() {
   recuperacao.email = ''
   recuperacao.codigoVerificado = false
+  recuperacao.token = ''
   sessionStorage.removeItem(CHAVE)
 }

@@ -3,7 +3,8 @@ import { onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import CampoSenha from '@/components/CampoSenha.vue'
-import { limparRecuperacao } from '@/services/recuperacaoSenha'
+import { limparRecuperacao, recuperacao } from '@/services/recuperacaoSenha'
+import { redefinirSenhaComToken, mensagemDeErroAuth } from '@/services/auth'
 
 const router = useRouter()
 
@@ -29,13 +30,14 @@ async function salvar() {
 
   carregando.value = true
   try {
-    // TODO: enviar a nova senha para a API
-    await new Promise((resolve) => setTimeout(resolve, 400)) // simula a chamada
+    await redefinirSenhaComToken(recuperacao.token, senha.value)
     sucesso.value = true
     redirecionar = setTimeout(() => {
       limparRecuperacao() // encerra o fluxo de recuperação
       router.push({ name: 'tela-acesso', query: { aviso: 'senha-alterada' } })
     }, 1800)
+  } catch (e) {
+    erro.value = mensagemDeErroAuth(e, 'Não foi possível alterar a senha. Tente novamente.')
   } finally {
     carregando.value = false
   }

@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { comAuth } from './api'
 
 const API_URL = 'http://localhost:8080/v1/senai/vibeEco'
 
@@ -7,7 +8,7 @@ export const naoLidas = computed(() => notificacoes.value.filter(n => !n.lida).l
 
 export async function carregarNotificacoes(idUsuario) {
     try {
-        const response = await fetch(`${API_URL}/notificacoes/${idUsuario}`)
+        const response = await fetch(`${API_URL}/notificacoes/${idUsuario}`, comAuth())
         if (!response.ok) throw new Error('Erro ao buscar')
         const data = await response.json()
         notificacoes.value = data
@@ -18,7 +19,7 @@ export async function carregarNotificacoes(idUsuario) {
 
 export async function marcarComoLida(id) {
     try {
-        await fetch(`${API_URL}/notificacoes/${id}/lida`, { method: 'PUT' })
+        await fetch(`${API_URL}/notificacoes/${id}/lida`, comAuth({ method: 'PUT' }))
         const n = notificacoes.value.find(n => n.id === id)
         if (n) n.lida = true
     } catch (e) {
@@ -28,7 +29,7 @@ export async function marcarComoLida(id) {
 
 export async function marcarTodasComoLidas(idUsuario) {
     try {
-        await fetch(`${API_URL}/notificacoes/${idUsuario}/todas-lidas`, { method: 'PUT' })
+        await fetch(`${API_URL}/notificacoes/${idUsuario}/todas-lidas`, comAuth({ method: 'PUT' }))
         notificacoes.value.forEach(n => n.lida = true)
     } catch (e) {
         console.error(e)

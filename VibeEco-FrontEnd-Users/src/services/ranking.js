@@ -1,5 +1,6 @@
 
 import { idDoUsuario } from './sessao'
+import { comAuth } from './api'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/v1/senai/vibeEco'
 
@@ -38,7 +39,7 @@ async function requisitarRanking(escopo, idUsuario) {
   let resposta
 
   try {
-    resposta = await fetch(`${API_URL}${endpoint}`)
+    resposta = await fetch(`${API_URL}${endpoint}`, comAuth())
   } catch {
     throw new Error('Não foi possível conectar à API.')
   }

@@ -2,7 +2,8 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthLayout from '@/layouts/AuthLayout.vue'
-import { limparRecuperacao, marcarCodigoVerificado } from '@/services/recuperacaoSenha'
+import { limparRecuperacao, marcarCodigoVerificado, recuperacao } from '@/services/recuperacaoSenha'
+import { pedirCodigoRecuperacao, validarCodigoRecuperacao, mensagemDeErroAuth } from '@/services/auth'
 
 const router = useRouter()
 
@@ -69,18 +70,24 @@ async function confirmar() {
   }
   carregando.value = true
   try {
-    // TODO: validar o código (digitos.value.join('')) na API
-    await new Promise((resolve) => setTimeout(resolve, 400)) // simula a chamada
-    marcarCodigoVerificado() // libera a próxima etapa do fluxo
+    const token = await validarCodigoRecuperacao(recuperacao.email, digitos.value.join(''))
+    marcarCodigoVerificado(token) // libera a próxima etapa do fluxo
     router.push('/nova-senha')
+  } catch (e) {
+    erro.value = mensagemDeErroAuth(e, 'Não foi possível validar o código. Tente novamente.')
   } finally {
     carregando.value = false
   }
 }
 
-function reenviar() {
+async function reenviar() {
   if (espera.value > 0) return
-  // TODO: pedir um novo código à API
+  try {
+    await pedirCodigoRecuperacao(recuperacao.email)
+  } catch (e) {
+    erro.value = mensagemDeErroAuth(e, 'Não foi possível reenviar o código.')
+    return
+  }
   digitos.value = Array(TAMANHO).fill('')
   erro.value = ''
   info.value = 'Enviamos um novo código para o seu e-mail.'
