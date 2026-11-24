@@ -2,14 +2,26 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { iniciarRecuperacao } from '@/services/recuperacaoSenha'
+import { pedirCodigoRecuperacao, mensagemDeErroAuth } from '@/services/auth'
 
 const router = useRouter()
 const email = ref('')
 
-function enviarCodigo() {
-  // TODO: chamar a API de recuperação de senha (ela envia o código de 6 dígitos para o e-mail)
-  iniciarRecuperacao(email.value) // guarda o e-mail e libera a etapa seguinte
-  router.push('/verificar-codigo')
+const erro = ref('')
+const enviando = ref(false)
+
+async function enviarCodigo() {
+  erro.value = ''
+  enviando.value = true
+  try {
+    await pedirCodigoRecuperacao(email.value.trim()) // a API envia o código de 6 dígitos para o e-mail
+    iniciarRecuperacao(email.value) // guarda o e-mail e libera a etapa seguinte
+    router.push('/verificar-codigo')
+  } catch (e) {
+    erro.value = mensagemDeErroAuth(e, 'Não foi possível enviar o código. Tente novamente.')
+  } finally {
+    enviando.value = false
+  }
 }
 
 function moverBolha(event) {
@@ -43,8 +55,10 @@ function moverBolha(event) {
           required
         />
 
-        <button type="submit" @mousemove="moverBolha">
-          Enviar código de recuperação
+        <p v-if="erro" class="auth-erro" role="alert">{{ erro }}</p>
+
+        <button type="submit" :disabled="enviando" @mousemove="moverBolha">
+          {{ enviando ? 'Enviando...' : 'Enviar código de recuperação' }}
         </button>
       </form>
     </div>
@@ -52,6 +66,8 @@ function moverBolha(event) {
 </template>
 
 <style scoped>
+.auth-erro { color: #c62828; font-size: 13px; margin: 0 0 10px; }
+button:disabled { opacity: .7; cursor: wait; }
 .pagina-esqueci-senha {
   width: 100%;
   min-height: 100vh;

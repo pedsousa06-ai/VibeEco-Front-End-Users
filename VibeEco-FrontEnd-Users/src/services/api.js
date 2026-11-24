@@ -1,4 +1,4 @@
-import { obterToken } from "./auth";
+import { obterToken, sair } from "./auth";
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/v1/senai/vibeEco'
 
@@ -20,6 +20,12 @@ async function erroDaResposta(resposta) {
         erro.codigo = (await resposta.json()).codigo
     } catch {
         /* resposta sem JSON */
+    }
+
+    // token vencido ou inválido: encerra a sessão e volta ao login
+    if (resposta.status === 401 && erro.codigo === 'TOKEN_INVALIDO') {
+        sair()
+        if (typeof window !== 'undefined' && window.location.pathname !== '/') window.location.assign('/')
     }
     return erro
 }
@@ -43,4 +49,12 @@ export async function apiEnviar(metodo, caminho, corpo) {
     if(!resposta.ok) throw await erroDaResposta(resposta)
 
     return resposta.json()
+}
+
+
+// Para os serviços que usam fetch direto: devolve as opções com o cabeçalho Authorization (se houver token)
+export function comAuth(opcoes = {}) {
+    const token = obterToken()
+    if (!token) return opcoes
+    return { ...opcoes, headers: { ...(opcoes.headers || {}), Authorization: `Bearer ${token}` } }
 }

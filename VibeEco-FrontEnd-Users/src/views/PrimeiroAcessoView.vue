@@ -1,9 +1,12 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { criarSenhaPrimeiroAcesso, mensagemDeErroAuth } from '@/services/auth'
 
 const router = useRouter()
 
+const identificador = ref('')
+const enviando = ref(false)
 const senhaAtual = ref('')
 const novaSenha = ref('')
 const confirmaSenha = ref('')
@@ -23,11 +26,16 @@ function alternar(campo) {
   mostrar.value[campo] = !mostrar.value[campo]
 }
 
-function criarSenha(){
+async function criarSenha(){
   erro.value = ''
 
   if(novaSenha.value.length < 8){
     erro.value = '⇾ A nova senha deve ter pelo menos 8 caracteres.'
+    return
+  }
+
+  if(!/\p{L}/u.test(novaSenha.value) || !/\d/.test(novaSenha.value)){
+    erro.value = 'Use letras e números na nova senha.'
     return
   }
 
@@ -36,9 +44,16 @@ function criarSenha(){
     return
   }
 
-  // TODO: aqui depois você chama a API para trocar a senha
-  // Senha criada: volta ao login, que mostra o aviso de sucesso
-  router.push({ name: 'tela-acesso', query: { aviso: 'senha-criada' } })
+  enviando.value = true
+  try {
+    await criarSenhaPrimeiroAcesso(identificador.value.trim(), senhaAtual.value, novaSenha.value)
+    // Senha criada: volta ao login, que mostra o aviso de sucesso
+    router.push({ name: 'tela-acesso', query: { aviso: 'senha-criada' } })
+  } catch (e) {
+    erro.value = mensagemDeErroAuth(e, 'Não foi possível criar a senha. Tente novamente.')
+  } finally {
+    enviando.value = false
+  }
 }
 
 function moverBolha(event) {
@@ -63,6 +78,17 @@ function moverBolha(event) {
       </p>
 
       <form @submit.prevent="criarSenha">
+        <!-- E-MAIL OU MATRÍCULA -->
+        <label for="identificador">E-mail ou matrícula</label>
+        <input
+          type="text"
+          id="identificador"
+          v-model="identificador"
+          placeholder="seuemail@instituicao.edu.br"
+          autocomplete="username"
+          required
+        />
+
         <!-- SENHA ATUAL -->
         <label for="senha-atual">Senha atual</label>
         <div class="campo-senha">
@@ -150,8 +176,8 @@ function moverBolha(event) {
 
         <p v-if="erro" class="erro">{{ erro }}</p>
 
-        <button type="submit" class="botao-principal" @mousemove="moverBolha">
-          Criar nova senha
+        <button type="submit" class="botao-principal" :disabled="enviando" @mousemove="moverBolha">
+          {{ enviando ? 'Salvando...' : 'Criar nova senha' }}
         </button>
       </form>
     </div>
@@ -246,6 +272,22 @@ function moverBolha(event) {
     outline-color: #22c55e;
     font-size: 13px;
   }
+
+  .caixa-troca-senha input#identificador{
+    width: 100%;
+    height: 42px;
+    box-sizing: border-box;
+    padding: 0 12px;
+    margin-bottom: 14px;
+
+    border: 1px solid #dce6dc;
+    border-radius: 8px;
+    background-color: white;
+    outline-color: #22c55e;
+    font-size: 13px;
+  }
+
+  .botao-principal:disabled { opacity: .7; cursor: wait; }
 
   .olho {
     position: absolute;

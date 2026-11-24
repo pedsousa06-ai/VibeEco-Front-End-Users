@@ -1,12 +1,14 @@
 // Integração do Feed com a API (VibeEco-Back-End-Users).
 // A URL base pode ser trocada criando um arquivo .env na raiz do front com:
 //   VITE_API_URL=http://localhost:8080/v1/senai/vibeEco
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/v1/senai/vibeEco'
+import { comAuth } from './api'
+
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/v1/senai/vibeEco'
 
 async function requisitar(caminho, opcoes) {
   let resposta
   try {
-    resposta = await fetch(`${BASE_URL}${caminho}`, opcoes)
+    resposta = await fetch(`${BASE_URL}${caminho}`, comAuth(opcoes))
   } catch {
     throw new Error('Não foi possível conectar à API. Confira se ela está rodando.')
   }

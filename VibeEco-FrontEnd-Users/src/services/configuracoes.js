@@ -1,6 +1,7 @@
 import { reactive, watch } from "vue";
 import '@/assets/acessibilidade.css';
 import { usuario } from './usuario'; 
+import { comAuth } from './api'
 import '@/assets/tema.css'
 
 const CHAVE = 'vebeeco:configuracoes'
@@ -48,7 +49,7 @@ export async function carregarConfiguracoes(idUsuario) {
     if (!idUsuario) return;
     
     try {
-        const response = await fetch(`${API_URL}/configuracoes/${idUsuario}`)
+        const response = await fetch(`${API_URL}/configuracoes/${idUsuario}`, comAuth())
         
         if (!response.ok) throw new Error('Erro na requisição')
         
@@ -78,13 +79,13 @@ watch(
             clearTimeout(timeoutSalvar)
             timeoutSalvar = setTimeout(async () => {
                 try {
-                    await fetch(`${API_URL}/configuracoes/${idUsuario}`, {
+                    await fetch(`${API_URL}/configuracoes/${idUsuario}`, comAuth({
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(configuracoes)
-                    })
+                    }))
                     console.log('Configurações salvas no banco!')
                 } catch (error) {
                     console.error('Erro ao salvar configurações no banco:', error)
