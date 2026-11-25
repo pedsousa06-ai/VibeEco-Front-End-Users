@@ -128,8 +128,8 @@ function enviarQuiz() {
   box-sizing: border-box;
   overflow-y: auto;
   border-radius: 20px;
-    background: #fff;
-  color: #12261a;
+    background: var(--superficie);
+  color: var(--texto);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
 }
 .fechar {
@@ -142,18 +142,18 @@ function enviarQuiz() {
   height: 34px;
   border: 0;
   border-radius: 8px;
-  background: #f0f4f1;
-  color: #4b5f52;
+  background: var(--suave-fundo);
+  color: var(--suave-texto);
   cursor: pointer;
 }
 .fechar:hover {
-  background: #e2ebe4;
+  background: var(--hover-suave);
 }
 .origem {
   display: block;
   margin-right: 40px;
   font-size: 12px;
-  color: #64756a;
+  color: var(--texto-suave);
 }
 h2 {
   margin: 6px 40px 8px 0;
@@ -167,8 +167,8 @@ h2 {
   margin: 0 0 14px;
   padding: 4px 10px;
   border-radius: 99px;
-  background: #fff7de;
-  color: #8a5a00;
+  background: var(--amarelo-fundo);
+  color: var(--amarelo-texto);
   font-size: 12.5px;
   font-weight: 700;
 }
@@ -179,7 +179,7 @@ h2 {
   margin: 0 0 14px;
   font-size: 14px;
   line-height: 1.6;
-  color: #4b5f52;
+  color: var(--texto-medio);
 }
 
 .pergunta {
@@ -199,18 +199,18 @@ h2 {
   gap: 10px;
   margin-bottom: 6px;
   padding: 10px 12px;
-  border: 1.5px solid #e0eae2;
+  border: 1.5px solid var(--borda);
   border-radius: 10px;
   font-size: 14px;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
 }
 .opcao:hover {
-  background: #f6fbf7;
+  background: var(--hover-suave);
 }
 .opcao-marcada {
   border-color: #22c55e;
-  background: #ecfaf1;
+  background: var(--destaque-fundo);
 }
 .opcao input {
   accent-color: #16a34a;
@@ -223,7 +223,7 @@ h2 {
 .erro {
   margin: 0 0 12px;
   font-size: 13px;
-  color: #c62828;
+  color: var(--erro-texto);
 }
 .rodape {
   display: flex;
@@ -242,12 +242,12 @@ h2 {
   cursor: pointer;
 }
 .secundario {
-  border: 1px solid #d5e6da;
-  background: #fff;
-  color: #12261a;
+  border: 1px solid var(--borda);
+  background: var(--superficie);
+  color: var(--texto);
 }
 .secundario:hover {
-  background: #f1faf3;
+  background: var(--hover-suave);
 }
 .acao {
   border: 0;

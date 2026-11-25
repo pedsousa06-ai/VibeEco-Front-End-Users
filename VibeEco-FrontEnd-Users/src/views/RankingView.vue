@@ -507,7 +507,7 @@ function aoApertarTecla(e) {
   padding: 30px;
   border: 1px solid var(--borda);
   border-radius: 16px;
-  background: #fff;
+  background: var(--superficie);
   color: var(--texto-suave);
   text-align: center;
 }
@@ -549,8 +549,8 @@ function aoApertarTecla(e) {
 .carregando-ponto {
   width: 28px;
   height: 28px;
-  border: 3px solid #dcebe0;
-  border-top-color: #14603a;
+  border: 3px solid var(--trilho);
+  border-top-color: var(--verde-600);
   border-radius: 50%;
   animation: girar 0.8s linear infinite;
 }
@@ -570,7 +570,7 @@ function aoApertarTecla(e) {
   padding: 4px;
   overflow-x: auto;
   border-radius: 12px;
-  background: #e6eee8;
+  background: var(--aba-fundo);
 }
 
 .aba {
@@ -600,7 +600,7 @@ function aoApertarTecla(e) {
 }
 
 .aba-ativa {
-  background: #fff;
+  background: var(--aba-ativa);
   color: var(--texto);
   font-weight: 600;
   box-shadow: 0 1px 3px rgba(18, 38, 26, 0.12);
@@ -784,12 +784,12 @@ function aoApertarTecla(e) {
   padding: 14px 20px;
   border: 1.5px solid #4ade80;
   border-radius: 16px;
-  background: #ddfbe8;
+  background: var(--destaque-fundo);
 }
 
 .voce-posicao {
   min-width: 52px;
-  color: #0f5b2d;
+  color: var(--verde-forte);
   font-size: 26px;
   font-weight: 800;
 }
@@ -801,13 +801,13 @@ function aoApertarTecla(e) {
 
 .voce-info strong {
   display: block;
-  color: #0f5b2d;
+  color: var(--verde-forte);
   font-size: 15.5px;
 }
 
 .voce-info small {
   font-size: 12.5px;
-  color: #2d6a45;
+  color: var(--verde-medio);
 }
 
 .voce-acao {
@@ -822,7 +822,7 @@ function aoApertarTecla(e) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #0f5b2d;
+  color: var(--verde-forte);
   font-size: 14px;
   font-weight: 500;
 }
@@ -874,7 +874,7 @@ function aoApertarTecla(e) {
   overflow: hidden;
   border: 1px solid var(--borda);
   border-radius: 16px;
-  background: #fff;
+  background: var(--superficie);
 }
 
 .linha {
@@ -889,7 +889,7 @@ function aoApertarTecla(e) {
 .linha-cabecalho {
   padding-block: 14px;
   border-bottom: 1px solid var(--borda);
-  background: #f4f8f5;
+  background: var(--zebra);
   color: var(--texto-suave);
   font-size: 11.5px;
   font-weight: 600;
@@ -898,12 +898,12 @@ function aoApertarTecla(e) {
 }
 
 .corpo .linha:nth-child(even) {
-  background: #f3f8f4;
+  background: var(--zebra);
 }
 
 .linha-voce,
 .corpo .linha-voce:nth-child(even) {
-  background: #ddfbe8;
+  background: var(--destaque-fundo);
 }
 
 .corpo .linha {
@@ -911,11 +911,11 @@ function aoApertarTecla(e) {
 }
 
 .corpo .linha:hover {
-  background: #e8f4eb;
+  background: var(--hover-suave);
 }
 
 .corpo .linha-voce:hover {
-  background: #d2f6e0;
+  background: color-mix(in srgb, var(--verde-600) 12%, var(--destaque-fundo))#d2f6e0;
 }
 
 .col-posicao {
@@ -951,11 +951,11 @@ function aoApertarTecla(e) {
 .tag-voce {
   font-size: 11px;
   font-weight: 600;
-  color: #15803d;
+  color: var(--verde-forte);
 }
 
 .linha-voce .usuario-texto strong {
-  color: #0f5b2d;
+  color: var(--verde-forte);
 }
 
 .col-nivel {
@@ -975,7 +975,7 @@ function aoApertarTecla(e) {
 }
 
 .col-xp {
-  color: #8a5a00;
+  color: var(--amarelo-texto);
   font-weight: 700;
 }
 
@@ -1017,7 +1017,7 @@ function aoApertarTecla(e) {
   height: 46px;
   border: 0;
   border-top: 1px solid var(--borda);
-  background: #fff;
+  background: var(--superficie);
   color: var(--verde-600);
   font: inherit;
   font-size: 14px;
@@ -1027,7 +1027,7 @@ function aoApertarTecla(e) {
 }
 
 .ver-mais:hover {
-  background: #f3f8f4;
+  background: var(--hover-suave);
 }
 
 .ver-mais:focus-visible {

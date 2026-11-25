@@ -238,7 +238,7 @@ function deslogar() {
   gap: 10px;
   padding: 14px 20px;
   background: var(--fundo);
-  color: var(--verde-900);
+  color: var(--verde-forte);
 }
 .cabecalho h2 {
   margin: 0;
@@ -363,9 +363,9 @@ function deslogar() {
   gap: 8px;
   width: 100%;
   height: 46px;
-  border: 1px solid #f3c9c9;
+  border: 1px solid var(--erro-borda);
   border-radius: 12px;
-  background: #fdf0f0;
+  background: var(--erro-fundo);
   color: #c0392b;
   font: inherit;
   font-size: 14px;
@@ -373,7 +373,7 @@ function deslogar() {
   cursor: pointer;
 }
 .sair:hover {
-  background: #fbe3e3;
+  background: color-mix(in srgb, var(--erro-texto) 8%, var(--erro-fundo));
 }
 .sair:focus-visible {
   outline: 3px solid #1fe05a;

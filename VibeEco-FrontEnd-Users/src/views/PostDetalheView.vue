@@ -69,7 +69,7 @@ onMounted(carregarPost)
 <template>
     <div class="detalhe-container">
         <button class="btn-voltar" @click="router.back()">
-            <Icone nome="seta-esquerda" :tamanho="16" /> Voltar
+            <Icone nome="seta-esquerda" :tamanho="16" />← Voltar
         </button>
 
         <p v-if="carregando" class="aviso">Carregando post...</p>
@@ -162,7 +162,7 @@ onMounted(carregarPost)
 }
 
 .btn-voltar:hover {
-    color: var(--verde-900);
+    color: var(--verde-forte);
 }
 
 .card {
@@ -213,8 +213,8 @@ onMounted(carregarPost)
     margin-left: auto;
     padding: 4px 12px;
     border-radius: 99px;
-    background: #fef3c7;
-    color: #8a5a00;
+    background: var(--amarelo-fundo);
+    color: var(--amarelo-texto);
     font-size: 12px;
     font-weight: 600;
 }
@@ -338,6 +338,7 @@ onMounted(carregarPost)
     background: var(--fundo);
     font: inherit;
     font-size: 14px;
+    color: var(--texto);
 }
 
 .botao {
@@ -363,6 +364,11 @@ onMounted(carregarPost)
     color: var(--texto-suave);
 }
 .aviso.erro {
-    color: #b91c1c;
+    color: var(--erro-texto);
+}
+
+.conteudo {
+    display: grid;
+    gap: 16px;
 }
 </style>

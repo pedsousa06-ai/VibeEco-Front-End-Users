@@ -248,7 +248,7 @@ onMounted(async () => {
   padding: 48px 24px;
   border: 1px dashed var(--borda);
   border-radius: 16px;
-  background: #fff;
+  background: var(--superficie);
   text-align: center;
   color: var(--texto-suave);
 }
@@ -280,7 +280,7 @@ onMounted(async () => {
   overflow: hidden;
   border: 1px solid var(--borda);
   border-radius: 16px;
-  background: #fff;
+  background: var(--superficie);
   box-shadow: 0 1px 2px rgba(18, 38, 26, 0.04);
 }
 
@@ -315,7 +315,7 @@ onMounted(async () => {
   padding: 3px 10px;
   border-radius: 99px;
   background: var(--verde-100);
-  color: #0f6b34;
+  color: var(--verde-forte);
   font-size: 12px;
   font-weight: 600;
 }
@@ -333,7 +333,7 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #8a5a00;
+  color: var(--amarelo-texto);
   font-weight: 700;
 }
 
@@ -361,17 +361,17 @@ onMounted(async () => {
   gap: 8px;
   margin: 0;
   padding: 12px;
-  border: 1px solid #bfe3c9;
+  border: 1px solid var(--sucesso-broda);
   border-radius: 12px;
-  background: #ecf9f0;
-  color: #0f6b34;
+  background: var(--sucesso-fundo);
+  color: var(--verde-forte);
   font-size: 14px;
   font-weight: 600;
 }
 
 .erro {
   margin: 0;
-  color: #b91c1c;
+  color: var(--erro-texto);
   font-size: 14px;
 }
 

@@ -42,5 +42,15 @@
   --facil-fundo: #e3f5ea;   --facil-texto: #15803d;
   --medio-fundo: #fff1e0;   --medio-texto: #c2610c;
   --dificil-fundo: #fde8e8; --dificil-texto: #c81e1e;
+
+  --switch-off: #d3e3d7;
+  --switch-on: #0a4a26;
+
+  --verde-900: #15803d;
+  --verde-950: #166534;
 }
 
+body {
+  background: var(--fundo);
+  color: var(--texto);
+}

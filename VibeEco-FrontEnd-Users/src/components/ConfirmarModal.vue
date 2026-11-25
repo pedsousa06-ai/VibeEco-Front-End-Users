@@ -70,24 +70,27 @@ function fechar() {
 }
 .caixa h3 {
   margin: 0 0 8px;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
+  font-family: serif;
 }
 .caixa p {
   margin: 0 0 20px;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.6;
   color: var(--texto-suave);
+  font-family: Georgia, 'Times New Roman', Times, serif;
 }
 .caixa .erro {
   margin: -8px 0 16px;
-  color: #c62828;
+  color: var(--erro-texto);
   font-weight: 600;
 }
 .acoes {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  font-family: serif;
 }
 .btn {
   height: 40px;
@@ -108,7 +111,7 @@ function fechar() {
   outline-offset: 2px;
 }
 .btn-secundario {
-  background: #eaf0eb;
+  background: var(--suave-fundo);
   color: var(--texto);
 }
 .btn-principal {

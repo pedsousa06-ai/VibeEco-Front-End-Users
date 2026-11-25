@@ -194,7 +194,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', aoApertarTecla))
   padding: 1px 8px;
   border-radius: 99px;
   background: var(--verde-100);
-  color: #0f6b34;
+  color: var(--verde-forte);
   font-size: 11px;
   font-weight: 600;
 }
@@ -258,10 +258,10 @@ textarea:focus {
 .erro {
   margin: 0;
   padding: 10px 12px;
-  border: 1px solid #f7caca;
+  border: 1px solid var(--erro-borda);
   border-radius: 10px;
-  background: #fef1f1;
-  color: #b91c1c;
+  background: var(--erro-fundo);
+  color: var(--erro-texto);
   font-size: 13px;
 }
  

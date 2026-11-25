@@ -185,7 +185,7 @@ onMounted(async () => {
   box-sizing: border-box;
   border: 1px solid var(--borda);
   border-radius: 10px;
-  background: #fff;
+  background: var(--superficie);
   color: var(--texto-suave);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -217,7 +217,7 @@ onMounted(async () => {
   padding: 0 16px;
   border: 1px solid var(--borda);
   border-radius: 99px;
-  background: #fff;
+  background: var(--superficie);
   color: var(--texto);
   font: inherit;
   font-size: 13.5px;
@@ -247,13 +247,13 @@ onMounted(async () => {
   padding: 48px 24px;
   border: 1px dashed var(--borda);
   border-radius: 16px;
-  background: #fff;
+  background: var(--superficie);
   text-align: center;
   color: var(--texto-suave);
 }
 
 .aviso.erro {
-  color: #b91c1c;
+  color: var(--erro-texto);
 }
 
 .grade {
@@ -292,7 +292,7 @@ onMounted(async () => {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.60);
+  background: color-mix(in srgb, var(--superficie) 60%, transparent);
   z-index: 1;
 }
 
@@ -312,8 +312,8 @@ onMounted(async () => {
   z-index: 3;
   padding: 3px 10px;
   border-radius: 99px;
-  background: var(--verde-900);
-  color: #fff;
+  background: var(--verde-100);
+  color: var(--verde-forte);
   font-size: 12px;
   font-weight: 600;
 }
@@ -359,7 +359,7 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #8a5a00;
+  color: var(--amarelo-texto);
   font-size: 13px;
   font-weight: 700;
 }

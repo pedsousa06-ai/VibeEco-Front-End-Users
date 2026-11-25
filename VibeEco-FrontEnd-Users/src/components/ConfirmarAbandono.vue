@@ -82,7 +82,7 @@ onUnmounted(() => {
   max-width: 420px;
   padding: 28px 24px 24px;
   border-radius: 20px;
-  background: #ffffff;
+  background: var(--superficie);
   box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.2);
   text-align: center;
   animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -95,12 +95,12 @@ onUnmounted(() => {
   height: 64px;
   margin: 0 auto 12px;
   border-radius: 50%;
-  background: #FDECEC;
+  background: var(--erro-fundo);
 }
 
 .titulo {
   margin: 0 0 8px;
-  color: #12261A;
+  color: var(--texto);
   font-size: 20px;
   font-weight: 800;
   font-family: 'Inter', system-ui, sans-serif;
@@ -108,7 +108,7 @@ onUnmounted(() => {
 
 .mensagem {
   margin: 0 0 20px;
-  color: #3D4F44;
+  color: var(--texto-medio);
   font-size: 14px;
   line-height: 1.5;
   font-family: 'Inter', system-ui, sans-serif;
@@ -143,8 +143,8 @@ onUnmounted(() => {
 }
 
 .botao-cancelar {
-  background: #EEF6F0;
-  color: #1F5D37;
+  background: var(--suave-fundo);
+  color: var(--suave-texto);
 }
 
 .botao-confirmar {

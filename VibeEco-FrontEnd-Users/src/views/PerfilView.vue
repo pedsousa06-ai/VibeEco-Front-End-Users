@@ -617,7 +617,7 @@ onBeforeUnmount(() => clearTimeout(timer))
 
 .ok {
     margin: 0 auto 0 0;
-    color: var(--verde-700);
+    color: var(--verde-forte);
     font-size: 13px;
     font-weight: 600;
 }
@@ -675,8 +675,8 @@ onBeforeUnmount(() => clearTimeout(timer))
 .aviso-info {
     margin: 0;
     padding: 12px 20px;
-    background:#84abff61 ;
-    color: #1E40AF;
+    background: color-mix(in srgb, #3b6fe0 14%, var(--superficie));
+    color: color-mix(in srgb, #3b6fe0 75%, var(--texto));
     font-size: 12.5px;
 }
 

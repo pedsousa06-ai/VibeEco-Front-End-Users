@@ -32,12 +32,12 @@ defineEmits(['update:modelValue'])
   padding: 0;
   border: 0;
   border-radius: 99px;
-  background: #d3e3d7;
+  background: var(--switch-off);
   cursor: pointer;
   transition: background 0.15s;
 }
 .interruptor.ligado {
-  background: var(--verde-900, #0a4a26);
+  background: var(--switch-on)
 }
 .bola {
   position: absolute;

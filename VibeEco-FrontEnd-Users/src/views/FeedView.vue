@@ -259,7 +259,7 @@ const desafios = [
   padding: 40px 24px;
   border: 1px dashed var(--borda);
   border-radius: 16px;
-  background: #fff;
+  background: var(--superficie);
   text-align: center;
   color: var(--texto-suave);
 }
@@ -267,8 +267,8 @@ const desafios = [
   margin: 0;
 }
 .aviso.erro {
-  border-color: #f7caca;
-  color: #b91c1c;
+  border-color: var(--erro-borda);
+  color: var(--erro-texto);
 }
 .post {
   display: grid;
@@ -281,7 +281,7 @@ const desafios = [
 }
 .post.clicavel:hover {
   transform: translateY(-2px);
-  border-color: #bfe0c8;
+  border-color: color-mix(in srgb, var(--verde-600) 35%, var(--borda));
   box-shadow: 0 10px 24px -12px rgba(18, 38, 26, 0.25);
 }
 .post-topo {
@@ -304,8 +304,8 @@ const desafios = [
   margin-left: auto;
   padding: 3px 10px;
   border-radius: 99px;
-  background: #fef3c7;
-  color: #8a5a00;
+  background: var(--amarelo-fundo);
+  color: var(--amarelo-texto);
   font-size: 12px;
   font-weight: 600;
 }
