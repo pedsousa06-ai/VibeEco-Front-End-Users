@@ -131,17 +131,18 @@ export async function buscarPostPorId(idPost) {
   return bruto ? normalizarPost(bruto) : null
 }
 
-// POST /post/:id/comentario
-// Cria um novo comentário no post
+// POST /postComentario
+// Cria um novo comentário no post (a rota antiga /post/:id/comentario foi removida do back-end)
 export async function criaComentario({ idPost, idUsuario, comentario }) {
-  const { ok, status, corpo } = await requisitar(`/post/${idPost}/comentario`, {
+  const { ok, status, corpo } = await requisitar('/postComentario', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ 
-      id_usuario: idUsuario, 
-      comentario: comentario 
+    body: JSON.stringify({
+      id_post: Number(idPost),
+      id_usuario: idUsuario,
+      comentario: comentario
     })
   })
 

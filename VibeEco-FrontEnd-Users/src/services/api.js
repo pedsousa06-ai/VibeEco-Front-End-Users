@@ -17,7 +17,9 @@ async function erroDaResposta(resposta) {
     const erro = new Error('Não foi possível carregar os dados')
     erro.status = resposta.status
     try {
-        erro.codigo = (await resposta.json()).codigo
+        const corpo = await resposta.json()
+        erro.codigo = corpo.codigo
+        erro.campo = corpo.field
     } catch {
         /* resposta sem JSON */
     }

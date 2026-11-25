@@ -7,7 +7,6 @@ import ConfirmarModal from '@/components/ConfirmarModal.vue'
 import {
   buscarMissao, concluirEtapa, etapaAtual, etapasConcluidas,
   participar, progressoDe, rotuloPrazo, statusDe, xpTotal,
-  concluirMissao
 } from '@/services/missoes'
 
 const route = useRoute()
@@ -57,28 +56,30 @@ function abrirEtapa() {
 
 async function aoConcluir() {
   const etapa = atual.value
-  if (!etapa) return
+  if (!etapa || enviandoConclusao.value) return
 
-  const resultado = concluirEtapa(missao.value, etapa)
-  modalAberto.value = false
+  enviandoConclusao.value = true
+  try {
+    // grava a etapa na API; na última etapa a própria API conclui a missão e paga as moedas
+    const resultado = await concluirEtapa(missao.value, etapa)
+    modalAberto.value = false
 
-  if (resultado.missaoConcluida) {
-    enviandoConclusao.value = true
-    try {
-      await concluirMissao(missao.value.id_missao)
+    if (resultado.missaoConcluida) {
       avisar(`Missão concluída! Você ganhou +${etapa.xp} XP e +${missao.value.coins_missao} Moedas.`)
-      
       setTimeout(() => {
         router.push('/missoes').then(() => window.location.reload())
       }, 2000)
-    } catch (e) {
-      avisar('Erro ao salvar a conclusão no banco. Tente novamente.')
-      if (import.meta.env.DEV) console.error(e)
-    } finally {
-      enviandoConclusao.value = false
+    } else {
+      avisar(`Etapa concluída! Você ganhou +${etapa.xp} XP.`)
+      const atualizada = await buscarMissao(missao.value.id_missao)
+      if (atualizada) missao.value = atualizada
     }
-  } else {
-    avisar(`Etapa concluída! Você ganhou +${etapa.xp} XP.`)
+  } catch (e) {
+    modalAberto.value = false
+    avisar(e?.message || 'Não foi possível salvar a etapa. Tente novamente.')
+    if (import.meta.env.DEV) console.error(e)
+  } finally {
+    enviandoConclusao.value = false
   }
 }
 
