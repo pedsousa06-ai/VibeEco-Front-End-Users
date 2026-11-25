@@ -11,6 +11,7 @@ import {
 } from '@/services/conteudos'
 
 import { usuario } from '@/services/usuario'
+import { idDoUsuario } from '@/services/sessao'
 
 const route = useRoute()
 const router = useRouter()
@@ -23,7 +24,7 @@ const mensagem = ref('')
 
 let inicioLeitura = null
 
-const idUsuario = usuario.id ?? usuario.id_usuario
+const idUsuario = idDoUsuario()
 
 function irParaLista() {
   router.push({ name: 'conteudos' })

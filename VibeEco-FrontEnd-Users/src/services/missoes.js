@@ -5,41 +5,16 @@
 ========================================================= */
 
 import { idDoUsuario } from './sessao'
+import { apiGet, apiEnviar } from './api'
 
-const API_URL = 'http://localhost:8080/v1/senai/vibeEco'
-
-// =========================================================
-// AUXILIAR PARA REQUISIÇÕES
-// =========================================================
-
-async function requisicao(url, opcoes = {}) {
-    const resposta = await fetch(url, {
-        ...opcoes,
-        headers: {
-            'Content-Type': 'application/json',
-            ...opcoes.headers,
-        },
-    })
-
-    const texto = await resposta.text()
-
-    let dados = null
-
-    try {
-        dados = texto ? JSON.parse(texto) : null
-    } catch {
-        dados = texto
-    }
-
-    if (!resposta.ok || dados?.status === false) {
-        throw new Error(
-            dados?.message ||
-            dados?.mensagem ||
-            `Erro na requisição: ${resposta.status}`
-        )
-    }
-
-    return dados
+// Mensagens amigáveis para os erros que a API devolve ao concluir etapas
+function erroAmigavel(erro, padrao) {
+    const campo = String(erro?.campo ?? '')
+    if (erro?.status === 409 && campo.includes('PRAZO')) return new Error('O prazo desta missão foi encerrado.')
+    if (erro?.status === 409 && campo.includes('JÁ CONCLUÍDA')) return new Error('Esta etapa já foi concluída.')
+    if (erro?.status === 409) return new Error('Esta missão não está em andamento.')
+    if (erro?.status === 404) return new Error('Você ainda não participa desta missão.')
+    return new Error(padrao)
 }
 
 // =========================================================
@@ -115,9 +90,7 @@ export async function listarMissoesCompletas() {
         throw new Error('Usuário não identificado na sessão.')
     }
 
-    const dados = await requisicao(
-        `${API_URL}/missoes/todasmissoes/${idUsuario}`
-    )
+    const dados = await apiGet(`/missoes/todasmissoes/${idUsuario}`)
 
     const lista = dados?.response?.missoes
 
@@ -214,52 +187,41 @@ export async function participar(missao) {
         throw new Error('Missão não identificada.')
     }
 
-    return await requisicao(
-        `${API_URL}/usuario_missao`,
-        {
-            method: 'POST',
-            body: JSON.stringify({
-                id_usuario: idUsuario,
-                id_missao: idMissao,
-            }),
-        }
-    )
+    try {
+        return await apiEnviar('POST', '/usuarioMissao', {
+            id_usuario: idUsuario,
+            id_missao: idMissao,
+        })
+    } catch (erro) {
+        if (erro?.status === 409) throw new Error('Você já participa desta missão.')
+        throw new Error('Não foi possível entrar na missão. Tente novamente.')
+    }
 }
 
 // =========================================================
 // CONCLUIR UMA ETAPA
 // =========================================================
 
-// Ainda depende da implementação da rota no backend.
+// POST /usuarioEtapa: a procedure grava a etapa, soma XP e, na última etapa,
+// conclui a missão e paga as moedas. Retorna { missaoConcluida, progresso, status }.
 export async function concluirEtapa(missao, etapa) {
-    throw new Error(
-        'A conclusão de etapas ainda não está disponível no backend.'
-    )
-}
-
-// =========================================================
-// CONCLUIR UMA MISSÃO
-// =========================================================
-
-export async function concluirMissao(idMissao) {
     const idUsuario = idDoUsuario()
 
-    if (!idUsuario) {
-        throw new Error('Usuário não identificado na sessão.')
-    }
+    if (!idUsuario) throw new Error('Usuário não identificado na sessão.')
+    if (!etapa?.id) throw new Error('Etapa não identificada.')
 
-    if (!idMissao) {
-        throw new Error('Missão não identificada.')
-    }
-
-    return await requisicao(
-        `${API_URL}/usuario_missao/concluir`,
-        {
-            method: 'PUT',
-            body: JSON.stringify({
-                id_usuario: idUsuario,
-                id_missao: idMissao,
-            }),
+    try {
+        const dados = await apiEnviar('POST', '/usuarioEtapa', {
+            id_usuario: idUsuario,
+            id_etapa: etapa.id,
+        })
+        const status = String(dados?.response?.status ?? '').toUpperCase()
+        return {
+            missaoConcluida: status === 'CONCLUIDA',
+            progresso: Number(dados?.response?.progresso ?? 0),
+            status,
         }
-    )
+    } catch (erro) {
+        throw erroAmigavel(erro, 'Não foi possível salvar a etapa. Tente novamente.')
+    }
 }
