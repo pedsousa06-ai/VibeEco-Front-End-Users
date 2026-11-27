@@ -1035,6 +1035,17 @@ function aoApertarTecla(e) {
   outline-offset: -4px;
 }
 
+/* ---------- TABLET: some a coluna de conquistas ---------- */
+@media (max-width: 1000px) and (min-width: 761px) {
+  .linha {
+    grid-template-columns: 64px minmax(0, 2fr) minmax(0, 1fr) 110px;
+  }
+
+  .col-conquistas {
+    display: none;
+  }
+}
+
 /* ---------- CELULAR ---------- */
 @media (max-width: 760px) {
   .linha {

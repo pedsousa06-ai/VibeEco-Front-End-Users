@@ -362,7 +362,7 @@ function classeDificuldade(texto) {
 .banner-nivel .barra { width: 100%; }
 .banner-xp { font-size: 12px; opacity: 0.75; }
 
-.resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 16px; }
 .resumo-card { display: flex; align-items: center; gap: 16px; padding: 20px; transition: transform 0.15s, box-shadow 0.15s; }
 .resumo-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -12px rgba(18, 38, 26, 0.25); }
 .resumo-icone { display: grid; place-items: center; flex: none; width: 48px; height: 48px; border-radius: 12px; }
@@ -392,7 +392,7 @@ function classeDificuldade(texto) {
 .missao-lado small { font-size: 12px; color: var(--texto-suave); }
 .missao-progresso { display: flex; justify-content: space-between; margin: 10px 0 6px; font-size: 12px; color: var(--texto-suave); }
 
-.conteudos { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.conteudos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 16px; }
 .conteudo { display: flex; flex-direction: column; gap: 12px; padding: 16px; height: 100%; box-sizing: border-box; transition: transform 0.15s, box-shadow 0.15s; text-decoration: none; color: inherit; }
 .conteudo:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -12px rgba(18, 38, 26, 0.25); }
 .conteudo-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
@@ -427,7 +427,7 @@ function classeDificuldade(texto) {
 .conquista-icone { display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 10px; font-size: 18px; }
 .conquista-icone img { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; }
 
-@media (max-width: 1200px) { .grade { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1280px) { .grade { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 700px) { .banner { flex-direction: column; align-items: flex-start; padding: 22px 20px; } .banner-texto h2 { font-size: 28px; } .banner-nivel { width: 100%; justify-items: start; text-align: left; } .conquistas { grid-template-columns: 1fr; } }
 
 .entrada { animation: entrar 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; animation-delay: calc(var(--i, 0) * 70ms); }

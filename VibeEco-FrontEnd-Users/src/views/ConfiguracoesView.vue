@@ -218,6 +218,7 @@ function deslogar() {
   gap: 24px;
   align-items: start;
   max-width: 1160px;
+  margin-inline: auto;
 }
 .coluna {
   display: grid;

@@ -81,7 +81,7 @@ button:disabled { opacity: .7; cursor: wait; }
 }
 
 .logo {
-  width: 350px;
+  width: min(350px, 80vw);
   height: auto;
 }
 

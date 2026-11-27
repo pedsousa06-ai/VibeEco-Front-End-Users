@@ -236,6 +236,48 @@
   max-width: 400px;
 }
 
+/* telas baixas (notebook com barra de favoritos, celular deitado): permite rolar em vez de cortar */
+@media (max-height: 720px) {
+  .home {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+  .lado-esquerdo > img {
+    position: absolute;
+    inset: 0;
+  }
+  .lado-esquerdo {
+    min-height: 100vh;
+  }
+  .lado-direito {
+    min-height: 100vh;
+    padding: 32px 0;
+    box-sizing: border-box;
+  }
+}
+/* tablet em pé e celular: só o formulário */
+@media (max-width: 900px) {
+  .home {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+  .lado-esquerdo {
+    display: none;
+  }
+  .lado-direito {
+    width: 100%;
+    min-height: 100vh;
+    padding: 32px 20px;
+    box-sizing: border-box;
+  }
+  .caixa-login {
+    width: 100%;
+    max-width: 420px;
+  }
+}
+
 .caixa-login h2{
   color: #203b27;
   text-align: center;

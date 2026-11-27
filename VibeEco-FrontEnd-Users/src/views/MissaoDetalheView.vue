@@ -251,7 +251,7 @@ const classeDificuldade = (d) => d.trim().toLowerCase().normalize('NFD').replace
 .voltar { display: inline-flex; align-items: center; gap: 8px; width: fit-content; color: var(--texto-suave); font-size: 14px; text-decoration: none; }
 .voltar:hover { color: var(--verde-600); }
 .aviso { margin: 0; padding: 12px 16px; border: 1px solid var(--sucesso-borda); border-radius: 12px; background: var(--sucesso-fundo); color: var(--verde-forte); font-size: 14px; font-weight: 600; }
-.detalhe { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; max-width: 1120px; }
+.detalhe { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; max-width: 1120px; margin-inline: auto; }
 .principal, .lateral { display: grid; gap: 20px; min-width: 0; }
 .card { padding: 24px; border: 1px solid var(--borda); border-radius: 16px; background: var(--superficie); box-shadow: 0 1px 2px rgba(18, 38, 26, 0.04); }
 .tags { display: flex; gap: 8px; }
@@ -305,7 +305,7 @@ const classeDificuldade = (d) => d.trim().toLowerCase().normalize('NFD').replace
 .dica p { margin: 0; font-size: 14px; line-height: 1.65; color: var(--texto-medio); }
 .nao-encontrada h2 { margin: 0 0 6px; }
 .nao-encontrada p { margin: 0; color: var(--texto-suave); }
-@media (max-width: 1100px) { .detalhe { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1180px) { .detalhe { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 640px) { .card { padding: 18px; } .resumo h2 { font-size: 26px; } .numeros { grid-template-columns: 1fr; } .etapa { flex-wrap: wrap; } .etapa-titulo { flex-basis: calc(100% - 60px); } }
 @media (prefers-reduced-motion: reduce) { .barra-preenchimento, .etapa-andamento { transition: none; } }
 </style>

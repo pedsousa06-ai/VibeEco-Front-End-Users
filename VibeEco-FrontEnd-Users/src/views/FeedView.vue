@@ -173,12 +173,14 @@ const desafios = [
 <style scoped>
 .feed {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-columns: minmax(0, 760px) clamp(280px, 22vw, 340px);
+  justify-content: center; /* feed centralizado em telas largas */
   gap: 24px;
   align-items: start;
 }
 .principal {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   min-width: 0;
 }
@@ -272,6 +274,7 @@ const desafios = [
 }
 .post {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   padding: 16px;
 }
@@ -289,9 +292,15 @@ const desafios = [
   align-items: center;
   gap: 12px;
 }
+.post-autor {
+  min-width: 0;
+}
 .post-autor strong {
   display: block;
+  overflow: hidden;
   font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .post-autor small {
   font-size: 12px;
@@ -319,7 +328,7 @@ const desafios = [
 .post-imagem {
   display: block;
   width: 100%;
-  max-height: 320px;
+  max-height: clamp(220px, 40vw, 420px);
   object-fit: cover;
   border-radius: 12px;
   background: var(--fundo);
@@ -375,6 +384,13 @@ const desafios = [
 .lateral {
   display: grid;
   gap: 16px;
+  min-width: 0;
+}
+@media (min-width: 1181px) and (min-height: 760px) {
+  .lateral {
+    position: sticky;
+    top: 88px;
+  }
 }
 .bloco {
   padding: 18px;
@@ -433,14 +449,29 @@ const desafios = [
   font-size: 12px;
   color: var(--texto-suave);
 }
-@media (max-width: 1100px) {
+/* tablet e notebook pequeno: uma coluna; ranking e desafios vão para baixo lado a lado */
+@media (max-width: 1180px) {
   .feed {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 760px);
+  }
+  .lateral {
+    grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+    align-items: start;
   }
 }
 @media (max-width: 520px) {
+  .compor {
+    padding: 12px;
+    gap: 10px;
+  }
   .compor .botao {
     display: none;
+  }
+  .post {
+    padding: 14px;
+  }
+  .bloco {
+    padding: 16px;
   }
 }
 </style>
