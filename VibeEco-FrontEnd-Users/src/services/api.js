@@ -24,8 +24,8 @@ async function erroDaResposta(resposta) {
         /* resposta sem JSON */
     }
 
-    // token vencido ou inválido: encerra a sessão e volta ao login
-    if (resposta.status === 401 && erro.codigo === 'TOKEN_INVALIDO') {
+    // 401 (token vencido, inválido ou ausente): encerra a sessão e volta ao login
+    if (resposta.status === 401) {
         sair()
         if (typeof window !== 'undefined' && window.location.pathname !== '/') window.location.assign('/')
     }
