@@ -223,7 +223,7 @@ const classeDificuldade = (d) => d.trim().toLowerCase().normalize('NFD').replace
 .aba-ativa { background: var(--aba-ativa); color: var(--texto); font-weight: 600; box-shadow: 0 1px 3px rgba(18, 38, 26, 0.12); }
 .contagem { display: grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 99px; background: color-mix(in srgb, var(--texto) 10%, transparent); font-size: 12px; font-weight: 600; }
 .aba-ativa .contagem { background: var(--verde-100); color: var(--verde-forte); }
-.grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 16px; }
 .card { display: flex; flex-direction: column; padding: 20px; border: 1px solid var(--borda); border-radius: 16px; background: var(--superficie); box-shadow: 0 1px 2px rgba(18, 38, 26, 0.04); transition: transform 0.15s, box-shadow 0.15s; }
 .card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -12px rgba(18, 38, 26, 0.25); }
 .tags { display: flex; align-items: center; gap: 8px; }

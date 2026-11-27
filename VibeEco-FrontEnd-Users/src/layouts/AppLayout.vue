@@ -336,9 +336,13 @@ function deslogar() {
   backdrop-filter: blur(8px);
 }
 .topo-titulo {
+  min-width: 0;
   margin: 0;
+  overflow: hidden;
   font-size: 20px;
   font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .botao-menu {
   display: none;
@@ -362,7 +366,7 @@ function deslogar() {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 300px;
+  width: clamp(200px, 22vw, 320px);
   height: 38px;
   padding: 0 12px;
   box-sizing: border-box;
@@ -443,9 +447,21 @@ function deslogar() {
 }
 
 .conteudo {
+  width: 100%;
   max-width: 1500px;
+  margin-inline: auto; /* centraliza em monitores largos */
   padding: 24px 24px 48px;
+  box-sizing: border-box;
   outline: 0;
+}
+@media (min-width: 1700px) {
+  .topo {
+    padding: 0 32px;
+  }
+  .conteudo {
+    max-width: 1560px;
+    padding-inline: 32px;
+  }
 }
 
 /* ---------- CELULAR E TABLET: menu vira gaveta ---------- */
@@ -457,6 +473,7 @@ function deslogar() {
 }
 @media (max-width: 1000px) {
   .lateral {
+    width: min(var(--largura-menu), 86vw);
     transform: translateX(-100%);
     transition: transform 0.25s ease;
     box-shadow: none;
@@ -487,6 +504,24 @@ function deslogar() {
 @media (max-width: 520px) {
   .chip-mc {
     display: none;
+  }
+  .topo {
+    gap: 10px;
+    padding: 0 12px;
+  }
+  .topo-titulo {
+    font-size: 17px;
+  }
+  .topo-acoes {
+    gap: 8px;
+  }
+  .conteudo {
+    padding: 14px 12px 32px;
+  }
+}
+@media (max-width: 360px) {
+  .chip-xp {
+    padding: 0 8px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

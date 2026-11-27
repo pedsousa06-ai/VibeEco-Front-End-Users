@@ -242,7 +242,9 @@ function fechar() {
 .pagina {
   display: grid;
   gap: 20px;
+  width: 100%;
   max-width: 840px;
+  margin-inline: auto;
 }
 .card {
   border: 1px solid var(--borda);

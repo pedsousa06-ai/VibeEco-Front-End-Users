@@ -163,7 +163,9 @@
   .pagina {
     display: grid;
     gap: 18px;
+    width: 100%;
     max-width: 840px;
+    margin-inline: auto;
     font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
   }
   /* ---------- BARRA ---------- */

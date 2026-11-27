@@ -200,7 +200,7 @@ function moverBolha(event) {
   }
 
   .logo{
-    width: 350px;
+    width: min(350px, 80vw);
     height: auto;
   }
 
